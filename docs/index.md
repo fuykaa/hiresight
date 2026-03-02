@@ -4,11 +4,10 @@
 Kelompok 15
 
 ## Anggota Kelompok
-| Nama | NIM |
-|------|-----|
-| Kistosi Al Ghifari (Ketua) | 23/515523/TK/56680 |
-| Kurniawan Surya Atmaja | 23/516680/TK/56802 |
-| Abdul Halim Edi Rahmansyah | 23/516603/TK/56796 |
+
+- **Kistosi Al Ghifari** (Ketua) - 23/515523/TK/56680
+- **Kurniawan Surya Atmaja** - 23/516680/TK/56802
+- **Abdul Halim Edi Rahmansyah** - 23/516603/TK/56796
 
 ## Project Senior Project TI
 
@@ -30,9 +29,8 @@ Banyak mahasiswa kesulitan dalam menyusun resume yang memenuhi standar industri,
 HireSight adalah aplikasi web yang memanfaatkan kecerdasan buatan untuk menganalisis dan mengevaluasi resume mahasiswa berdasarkan standar ATS. Aplikasi ini memberikan feedback otomatis, skor kelayakan resume, serta rekomendasi perbaikan agar resume lebih kompetitif di dunia kerja.
 
 ## Analisis Kompetitor
-| Kompetitor | Kelebihan | Kekurangan |
-|------------|-----------|------------|
-| Jobscan | Analisis ATS detail | Berbayar, tidak fokus mahasiswa |
-| Resume Worded | Feedback lengkap | Berbayar, tidak ada versi gratis penuh |
-| Zety | Template menarik | Tidak ada analisis ATS mendalam |
-| HireSight | Gratis, fokus mahasiswa Indonesia | Produk baru |
+
+- **Jobscan** — Kelebihan: Analisis ATS detail | Kekurangan: Berbayar, tidak fokus mahasiswa
+- **Resume Worded** — Kelebihan: Feedback lengkap | Kekurangan: Berbayar, tidak ada versi gratis penuh
+- **Zety** — Kelebihan: Template menarik | Kekurangan: Tidak ada analisis ATS mendalam
+- **HireSight** — Kelebihan: Gratis, fokus mahasiswa Indonesia | Kekurangan: Produk baru
