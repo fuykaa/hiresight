@@ -1,26 +1,153 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- LIGHT MODE COLORS (Nord Theme) --- */
+  --p: #5e81ac; /* primary */
+  --pc: #eceff4; /* primary-content (putih nord agar kontras di atas biru) */
+  --s: #81a1c1;
+  --sc: #eceff4;
+  --a: #88c0d0;
+  --ac: #2e3440;
+  --n: #4c566a;
+  --nc: #d8dee9;
+  --b1: #eceff4; /* base-100 */
+  --b2: #e5e9f0; /* base-200 */
+  --b3: #d8dee9; /* base-300 */
+  --bc: #2e3440; /* base-content */
+  --in: #b48ead;
+  --su: #a3be8d;
+  --wa: #ebcb8b;
+  --er: #bf616a;
+  --erc: #eceff4;
+
+  /* --- Shadcn Mapping --- */
+  --background: var(--b1);
+  --foreground: var(--bc);
+  --card: var(--b1);
+  --card-foreground: var(--bc);
+  --popover: var(--b1);
+  --popover-foreground: var(--bc);
+  --primary: var(--p);
+  --primary-foreground: var(--pc);
+  --secondary: var(--s);
+  --secondary-foreground: var(--sc);
+  --muted: var(--b2);
+  --muted-foreground: var(--n);
+  --accent: var(--a);
+  --accent-foreground: var(--ac);
+  --destructive: var(--er);
+  --destructive-foreground: var(--erc);
+  --border: var(--b3);
+  --input: var(--b3);
+  --ring: var(--p);
+  --radius: 0.625rem;
+
+  /* Chart colors mapping (optional but good for completeness) */
+  --chart-1: var(--p);
+  --chart-2: var(--s);
+  --chart-3: var(--a);
+  --chart-4: var(--in);
+  --chart-5: var(--su);
+}
+
+/* Gunakan .dark agar sinkron dengan document.documentElement.classList.add('dark') */
+.dark {
+  /* --- DARK MODE COLORS (Dracula Theme) --- */
+  --p: #ff79c6;
+  --pc: #282a36; /* primary-content (gelap agar kontras di atas pink) */
+  --s: #bd93f9;
+  --sc: #282a36;
+  --a: #ffb86c;
+  --ac: #282a36;
+  --n: #414558;
+  --nc: #f8f8f2;
+  --b1: #282a36;
+  --b2: #232530;
+  --b3: #1f202a;
+  --bc: #f8f8f2;
+  --in: #8be9fd;
+  --su: #51fa7b;
+  --wa: #f1fa8c;
+  --er: #ff5555;
+  --erc: #282a36;
+
+  /* --- Shadcn dark mapping --- */
+  --background: var(--b1);
+  --foreground: var(--bc);
+  --card: var(--b1);
+  --card-foreground: var(--bc);
+  --popover: var(--b1);
+  --popover-foreground: var(--bc);
+  --primary: var(--p);
+  --primary-foreground: var(--pc);
+  --secondary: var(--s);
+  --secondary-foreground: var(--sc);
+  --muted: var(--b2);
+  --muted-foreground: var(--n);
+  --accent: var(--a);
+  --accent-foreground: var(--ac);
+  --destructive: var(--er);
+  --destructive-foreground: var(--erc);
+  --border: var(--b3);
+  --input: var(--b3);
+  --ring: var(--p);
+  --radius: 0.625rem;
 }
 
 @theme inline {
+  --font-montserrat: var(--font-montserrat);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Helper colors for ease of use */
+  --color-success: var(--su);
+  --color-warning: var(--wa);
+  --color-error: var(--er);
+  --color-primary-content: var(--pc);
+  --color-base-100: var(--b1);
+  --color-base-200: var(--b2);
+  --color-base-300: var(--b3);
+  --color-base-content: var(--bc);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    font-family: var(--font-montserrat), sans-serif;
+    @apply bg-background text-foreground;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Transisi halus saat ganti tema */
+*,
+*::before,
+*::after {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease;
 }
