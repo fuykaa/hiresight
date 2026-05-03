@@ -1,0 +1,49 @@
+# Binary executables
+# Mengabaikan file hasil build (biasanya nama project atau main)
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+out/
+
+# Output kompilasi Go (jika menggunakan go build -o)
+# Ganti 'main' dengan nama binary kamu jika berbeda
+main
+backend-hiresight
+
+# Dependency directories
+# Vendor tidak wajib di-ignore jika kamu memang ingin menyimpannya di git,
+# tapi standarnya sekarang menggunakan Go Modules.
+vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Environment Variables (Sangat Penting!)
+# Mengabaikan file yang berisi secret key seperti JWT_SECRET atau DB_PASSWORD
+.env
+.env.local
+.env.*.local
+
+# Test coverage files
+*.out
+*.prof
+*.test
+
+# IDE / Editor Specific
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+uploads/
