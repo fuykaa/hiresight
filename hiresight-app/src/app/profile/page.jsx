@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import { ArrowLeft, User, Mail, Camera, Save, Edit2 } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({
     fullName: "Alex Doe",
@@ -25,16 +26,16 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background text-foreground font-montserrat p-6 md:p-12 md:pt-32">
       <div className="max-w-5xl mx-auto">
         {/* --- BACK BUTTON --- */}
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold mb-8 group"
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold mb-8 group bg-transparent border-none cursor-pointer"
         >
           <ArrowLeft
             size={20}
             className="group-hover:-translate-x-1 transition-transform"
           />
-          Back to Dashboard
-        </Link>
+          Back
+        </button>
 
         <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[500px]">
           {/* --- LEFT SECTION: AVATAR --- */}
