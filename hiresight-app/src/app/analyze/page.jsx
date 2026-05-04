@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { ArrowLeft, Upload, FileText, X, Loader2, Plus } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function AnalyzePage() {
+  const router = useRouter();
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState("upload"); // upload -> ready -> loading
   const [progress, setProgress] = useState(0);
@@ -41,16 +42,16 @@ export default function AnalyzePage() {
       <div className="max-w-4xl mx-auto space-y-10">
         {/* --- HEADER --- */}
         <header className="flex items-center justify-between border-b border-border pb-6">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors font-bold group"
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold mb-8 group bg-transparent border-none cursor-pointer"
           >
             <ArrowLeft
               size={20}
               className="group-hover:-translate-x-1 transition-transform"
             />
             Back
-          </Link>
+          </button>
           <h1 className="text-xl font-bold uppercase tracking-widest text-primary">
             Upload & Analyze
           </h1>
