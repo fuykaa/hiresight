@@ -1,94 +1,84 @@
 "use client";
 
-import React, { useState } from "react";
-import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Search, Plus, ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ResumeTable from "@/components/Resume/ResumeTable";
+import { useRouter } from "next/navigation";
+import { useApi } from "@/hooks/useApi";
+import api from "@/lib/api";
+import { useCallback } from "react";
+
+const formatDate = (isoString) => {
+  if (!isoString) return "-";
+  return new Date(isoString).toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
 
 export default function ResumePage() {
-  // Mock Data
-  const [resumes] = useState([
-    {
-      id: 1,
-      fileName: "Software_Engineer_Alex.pdf",
-      score: 85,
-      date: "12 Mar 2026",
-    },
-    {
-      id: 2,
-      fileName: "Product_Designer_Final.pdf",
-      score: 62,
-      date: "10 Mar 2026",
-    },
-    {
-      id: 3,
-      fileName: "Marketing_Resume_Old.docx",
-      score: 45,
-      date: "05 Mar 2026",
-    },
-    { id: 4, fileName: "Fullstack_Dev_V3.pdf", score: 92, date: "01 Mar 2026" },
-    {
-      id: 5,
-      fileName: "Data_Scientist_Intern.pdf",
-      score: 78,
-      date: "28 Feb 2026",
-    },
-    {
-      id: 6,
-      fileName: "UI_UX_Portfolio_2026.pdf",
-      score: 88,
-      date: "25 Feb 2026",
-    },
-    {
-      id: 7,
-      fileName: "Project_Manager_Draft.docx",
-      score: 55,
-      date: "20 Feb 2026",
-    },
-    {
-      id: 8,
-      fileName: "Backend_Go_Developer.pdf",
-      score: 71,
-      date: "15 Feb 2026",
-    },
-    {
-      id: 9,
-      fileName: "System_Analyst_Final.pdf",
-      score: 49,
-      date: "10 Feb 2026",
-    },
-    {
-      id: 10,
-      fileName: "Mobile_Dev_React_Native.pdf",
-      score: 95,
-      date: "05 Feb 2026",
-    },
-    {
-      id: 11,
-      fileName: "DevOps_Engineer_AWS.pdf",
-      score: 82,
-      date: "01 Feb 2026",
-    },
-    {
-      id: 12,
-      fileName: "QA_Automation_Tester.docx",
-      score: 67,
-      date: "28 Jan 2026",
-    },
-  ]);
+  const router = useRouter();
+  const { callApi, loading, error } = useApi();
+  const [resumes, setResumes] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  // Hitung indeks data
-  const indexOfLastItem = currentPage * itemsPerPage;
+  const handleDelete = useCallback(async (id) => {
+    try {
+      await api.delete(`/api/resume/${id}`);
+      setResumes((prev) => prev.filter((r) => r.id !== id));
+    } catch {
+      // gagal hapus — tidak ubah state
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchResumes = async () => {
+      try {
+        const data = await callApi(api.get("/api/resumes"));
+        const resumeList = data || [];
+
+        // Fetch status analisis untuk setiap resume secara paralel
+        const analysisResults = await Promise.allSettled(
+          resumeList.map((r) => api.get(`/api/analysis/${r.id}`))
+        );
+
+        const mapped = resumeList.map((r, i) => {
+          const settled = analysisResults[i];
+          let scoreValue = "Belum dianalisis";
+          if (settled.status === "fulfilled") {
+            const analysisData = settled.value.data;
+            if (analysisData?.status === "completed") {
+              scoreValue = analysisData.ats_score;
+            }
+          }
+          return {
+            id:       r.id,
+            fileName: r.file_name,
+            score:    scoreValue,
+            date:     formatDate(r.uploaded_at),
+          };
+        });
+
+        setResumes(mapped);
+      } catch {
+        // error sudah di-handle oleh useApi
+      }
+    };
+    fetchResumes();
+  }, []);
+
+  const filteredResumes  = resumes.filter((r) =>
+    r.fileName.toLowerCase().includes(searchQuery.toLowerCase().trim())
+  );
+  const indexOfLastItem  = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-
-  // Data yang ditampilkan di tabel saat ini
-  const currentResumes = resumes.slice(indexOfFirstItem, indexOfLastItem);
-
-  // Hitung total halaman
-  const totalPages = Math.ceil(resumes.length / itemsPerPage);
+  const currentResumes   = filteredResumes.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages       = Math.ceil(filteredResumes.length / itemsPerPage) || 1;
 
   return (
     <div className="min-h-screen bg-background text-foreground font-montserrat p-6 md:p-12 md:pt-32">
@@ -105,78 +95,115 @@ export default function ResumePage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/70" />
             <Input
               placeholder="Search resume..."
-              className="pl-10 rounded-xl bg-card border-border "
+              className="pl-10 rounded-xl bg-card border-border"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
             />
           </div>
-          <Button className="w-full md:w-auto rounded-xl font-bold gap-2">
+          <Button
+            className="w-full md:w-auto rounded-xl font-bold gap-2"
+            onClick={() => router.push("/analyze")}
+          >
             <Plus size={18} /> Upload Resume
           </Button>
         </div>
 
-        {/* Kirim currentResumes (maks 10) ke tabel */}
-        <ResumeTable data={currentResumes} />
-
-        {/* --- KONTROL PAGINATION --- */}
-        <div className="flex items-center justify-between pt-4">
-          <p className="text-sm text-foreground/70">
-            Showing{" "}
-            <span className="font-bold text-foreground">
-              {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, resumes.length)}
-            </span>{" "}
-            of{" "}
-            <span className="font-bold text-foreground">{resumes.length}</span>{" "}
-            resumes
-          </p>
-
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-lg"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft size={18} />
-            </Button>
-
-            {Array.from({ length: totalPages }, (_, i) => {
-              const isActive = currentPage === i + 1;
-              return (
-                <Button
-                  key={i + 1}
-                  variant={isActive ? "default" : "outline"} // Gunakan variant default untuk yang aktif
-                  size="icon"
-                  className={`rounded-lg transition-all ${
-                    isActive
-                      ? "bg-primary text-primary-content border-primary"
-                      : "text-foreground/70"
-                  }`}
-                  // Tambahkan style inline sebagai pengaman terakhir
-                  style={
-                    isActive
-                      ? { backgroundColor: "var(--p)", color: "var(--pc)" }
-                      : {}
-                  }
-                  onClick={() => setCurrentPage(i + 1)}
-                >
-                  {i + 1}
-                </Button>
-              );
-            })}
-
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-lg text-foreground/70 hover:text-foreground/90"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight size={18} />
-            </Button>
+        {/* --- LOADING STATE --- */}
+        {loading && (
+          <div className="flex items-center justify-center gap-3 py-16 text-muted-foreground">
+            <Loader2 size={20} className="animate-spin text-primary" />
+            <span className="font-bold text-sm tracking-widest uppercase">
+              Memuat daftar resume...
+            </span>
           </div>
-        </div>
+        )}
+
+        {/* --- ERROR STATE --- */}
+        {error && !loading && (
+          <div className="flex items-center justify-center gap-3 py-16 text-destructive">
+            <AlertCircle size={20} />
+            <span className="font-bold text-sm">{error}</span>
+          </div>
+        )}
+
+        {/* --- TABEL --- */}
+        {!loading && !error && (
+          <>
+            {resumes.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground">
+                <p className="font-bold">Belum ada resume yang diupload.</p>
+              </div>
+            ) : filteredResumes.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground">
+                <p className="font-bold">Tidak ada resume yang cocok dengan pencarian.</p>
+              </div>
+            ) : (
+              <ResumeTable data={currentResumes} onDelete={handleDelete} />
+            )}
+
+            {/* --- KONTROL PAGINATION --- */}
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-sm text-foreground/70">
+                Showing{" "}
+                <span className="font-bold text-foreground">
+                  {filteredResumes.length === 0 ? 0 : indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredResumes.length)}
+                </span>{" "}
+                of{" "}
+                <span className="font-bold text-foreground">{filteredResumes.length}</span>{" "}
+                resumes
+              </p>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-lg"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft size={18} />
+                </Button>
+
+                {Array.from({ length: totalPages }, (_, i) => {
+                  const isActive = currentPage === i + 1;
+                  return (
+                    <Button
+                      key={i + 1}
+                      variant={isActive ? "default" : "outline"}
+                      size="icon"
+                      className={`rounded-lg transition-all ${
+                        isActive
+                          ? "bg-primary text-primary-content border-primary"
+                          : "text-foreground/70"
+                      }`}
+                      style={
+                        isActive
+                          ? { backgroundColor: "var(--p)", color: "var(--pc)" }
+                          : {}
+                      }
+                      onClick={() => setCurrentPage(i + 1)}
+                    >
+                      {i + 1}
+                    </Button>
+                  );
+                })}
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-lg text-foreground/70 hover:text-foreground/90"
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight size={18} />
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

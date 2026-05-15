@@ -27,7 +27,7 @@ export default function LoginPage() {
     try {
       const response = await login(formData);
       if (response) {
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       }
     } catch (err) {
       console.error("Login failed:", err);

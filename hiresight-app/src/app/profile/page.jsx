@@ -1,31 +1,82 @@
 "use client";
 
-import React, { useState } from "react";
-import { ArrowLeft, User, Mail, Camera, Save, Edit2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ArrowLeft, User, Mail, Save, Edit2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import api from "@/lib/api";
 
 export default function ProfilePage() {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const [userData, setUserData] = useState({
-    fullName: "Alex Doe",
-    email: "alex.doe@example.com",
-    avatar: "https://github.com/shadcn.png",
-  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // Logika simpan ke database bisa ditaruh di sini
+  const [userData, setUserData] = useState({
+    fullName: "",
+    email: "",
+  });
+  const [editName, setEditName] = useState("");
+
+  useEffect(() => {
+    api
+      .get("/api/profile")
+      .then((res) => {
+        setUserData({
+          fullName: res.data.full_name || "",
+          email: res.data.email || "",
+        });
+        setEditName(res.data.full_name || "");
+      })
+      .catch(() => setError("Gagal memuat profil."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleEdit = () => {
+    setEditName(userData.fullName);
+    setSuccessMsg("");
+    setError("");
+    setIsEditing(true);
   };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setError("");
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      await api.put("/api/profile", { full_name: editName });
+      setUserData((prev) => ({ ...prev, fullName: editName }));
+      setSuccessMsg("Profil berhasil diperbarui.");
+      setIsEditing(false);
+    } catch {
+      setError("Gagal menyimpan perubahan.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const initials = userData.fullName
+    ? userData.fullName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "?";
 
   return (
     <div className="min-h-screen bg-background text-foreground font-montserrat p-6 md:p-12 md:pt-32">
       <div className="max-w-5xl mx-auto">
-        {/* --- BACK BUTTON --- */}
+        {/* Back Button */}
         <button
           onClick={() => router.back()}
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold mb-8 group bg-transparent border-none cursor-pointer"
@@ -38,42 +89,34 @@ export default function ProfilePage() {
         </button>
 
         <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[500px]">
-          {/* --- LEFT SECTION: AVATAR --- */}
+          {/* Left Section: Avatar */}
           <div className="w-full md:w-1/3 bg-muted/30 p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-border space-y-6">
-            <div className="relative group">
-              <Avatar className="w-40 h-40 border-4 border-background shadow-xl">
-                <AvatarImage src={userData.avatar} />
-                <AvatarFallback className="bg-primary/10 text-primary text-4xl font-bold">
-                  {userData.fullName
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-
-              {isEditing && (
-                <button className="absolute bottom-2 right-2 p-3 bg-primary text-primary-content rounded-full shadow-lg hover:scale-110 transition-transform">
-                  <Camera size={20} />
-                </button>
-              )}
-            </div>
+            <Avatar className="w-40 h-40 border-4 border-background shadow-xl">
+              <AvatarFallback className="bg-primary/10 text-primary text-4xl font-bold">
+                {loading ? <Loader2 className="animate-spin" /> : initials}
+              </AvatarFallback>
+            </Avatar>
 
             <div className="text-center">
               <h2 className="text-2xl font-bold tracking-tight">
-                {userData.fullName}
+                {loading ? (
+                  <span className="text-muted-foreground text-base">Memuat...</span>
+                ) : (
+                  userData.fullName || <span className="text-muted-foreground text-base italic">Belum ada nama</span>
+                )}
               </h2>
             </div>
           </div>
 
-          {/* --- RIGHT SECTION: ACCOUNT INFORMATION --- */}
+          {/* Right Section: Account Information */}
           <div className="flex-1 p-8 md:p-12 flex flex-col">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-xl font-bold uppercase tracking-wider text-primary">
                 Account Information
               </h3>
-              {!isEditing && (
+              {!isEditing && !loading && (
                 <Button
-                  onClick={() => setIsEditing(true)}
+                  onClick={handleEdit}
                   variant="outline"
                   className="rounded-xl gap-2 font-bold"
                 >
@@ -95,17 +138,16 @@ export default function ProfilePage() {
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="fullName"
-                    disabled={!isEditing}
-                    value={userData.fullName}
-                    onChange={(e) =>
-                      setUserData({ ...userData, fullName: e.target.value })
-                    }
+                    disabled={!isEditing || saving}
+                    value={isEditing ? editName : userData.fullName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder={loading ? "Memuat..." : "Belum diisi"}
                     className="pl-10 h-12 rounded-xl bg-muted/20 border-border focus:ring-primary disabled:opacity-100 disabled:bg-transparent"
                   />
                 </div>
               </div>
 
-              {/* Email Field */}
+              {/* Email Field (read-only) */}
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
@@ -118,38 +160,47 @@ export default function ProfilePage() {
                   <Input
                     id="email"
                     type="email"
-                    disabled={!isEditing}
+                    disabled
                     value={userData.email}
-                    onChange={(e) =>
-                      setUserData({ ...userData, email: e.target.value })
-                    }
+                    placeholder={loading ? "Memuat..." : ""}
                     suppressHydrationWarning
-                    className="pl-10 h-12 rounded-xl bg-muted/20 border-border focus:ring-primary disabled:opacity-100 disabled:bg-transparent"
+                    className="pl-10 h-12 rounded-xl bg-muted/20 border-border disabled:opacity-100 disabled:bg-transparent"
                   />
                 </div>
+                {isEditing && (
+                  <p className="text-xs text-muted-foreground">
+                    Email tidak dapat diubah.
+                  </p>
+                )}
               </div>
 
-              {/* Info Text (Hanya muncul saat edit) */}
-              {isEditing && (
-                <p className="text-xs text-muted-foreground italic pt-2">
-                  * Nama dan email akan digunakan pada dokumen resume yang Anda
-                  buat.
-                </p>
+              {successMsg && (
+                <p className="text-sm text-green-600 font-medium">{successMsg}</p>
+              )}
+              {error && (
+                <p className="text-sm text-destructive font-medium">{error}</p>
               )}
             </div>
 
-            {/* --- ACTION BUTTONS --- */}
+            {/* Action Buttons */}
             {isEditing && (
               <div className="pt-8 flex gap-4 mt-auto">
                 <Button
                   onClick={handleSave}
+                  disabled={saving}
                   className="flex-1 h-12 rounded-xl font-bold gap-2 shadow-lg shadow-primary/20"
                 >
-                  <Save size={18} /> Save Changes
+                  {saving ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <Save size={18} />
+                  )}
+                  {saving ? "Menyimpan..." : "Save Changes"}
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => setIsEditing(false)}
+                  onClick={handleCancel}
+                  disabled={saving}
                   className="flex-1 h-12 rounded-xl font-bold"
                 >
                   Cancel

@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import NavButton from "./NavButton";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import api from "@/lib/api";
 import {
   Menu,
   User,
@@ -35,13 +36,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const [isDark, setIsDark] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(null); // null = belum tahu
 
-  // Inisialisasi tema saat mount
+  const handleLogout = async () => {
+    try {
+      await api.post("/api/logout");
+    } finally {
+      window.location.href = "/login";
+    }
+  };
+
   useEffect(() => {
     const root = window.document.documentElement;
     setIsDark(root.classList.contains("dark"));
+
+    api.get("/api/profile")
+      .then(() => setIsLoggedIn(true))
+      .catch(() => setIsLoggedIn(false));
   }, []);
 
   const toggleTheme = (theme) => {
@@ -130,11 +144,23 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Footer Button: Log In (Sesuai Layout Gambar) */}
+            {/* Footer Button: Log In / Log Out */}
             <div className="mt-auto flex justify-center pb-6">
-              <Button className="w-5/6 h-14 rounded-2xl bg-neutral text-neutral-content font-bold text-lg hover:opacity-90 transition-opacity">
-                Log In
-              </Button>
+              {isLoggedIn === true ? (
+                <Button
+                  className="w-5/6 h-14 rounded-2xl font-bold text-lg bg-error/10 text-error hover:bg-error/20 transition-opacity"
+                  onClick={handleLogout}
+                >
+                  Log Out
+                </Button>
+              ) : (
+                <Button
+                  className="w-5/6 h-14 rounded-2xl bg-neutral text-neutral-content font-bold text-lg hover:opacity-90 transition-opacity"
+                  onClick={() => router.push("/login")}
+                >
+                  Log In
+                </Button>
+              )}
             </div>
           </SheetContent>
         </Sheet>
@@ -168,70 +194,80 @@ export default function Navbar() {
           />
         </div>
 
-        {/* User Profile Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-base-content/5 transition-all outline-none group">
-              <div className="text-right hidden lg:block">
-                <p className="text-xs font-bold leading-none">Alex Doe</p>
-              </div>
-              <Avatar className="w-8 h-8 border border-primary/20 group-hover:border-primary transition-colors">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>AD</AvatarFallback>
-              </Avatar>
-              <ChevronDown
-                size={14}
-                className="text-muted-foreground group-hover:text-primary transition-colors"
-              />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-56 mt-4 rounded-xl p-2 bg-base-100/90 backdrop-blur-lg"
+        {/* User Profile Dropdown / Login Button */}
+        {isLoggedIn === false ? (
+          <Button
+            onClick={() => router.push("/login")}
+            className="rounded-full font-bold px-5"
           >
-            <DropdownMenuLabel className="font-montserrat">
-              My Account
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="rounded-lg cursor-pointer py-2.5">
-              <Link href="/profile" className="flex w-full items-center">
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground pt-2 px-2">
-              Appearance
-            </DropdownMenuLabel>
-
-            <DropdownMenuItem
-              onClick={() => toggleTheme(isDark ? "light" : "dark")}
-              className="rounded-lg cursor-pointer py-2.5 flex justify-between items-center"
-            >
-              <div className="flex items-center">
-                {isDark ? (
-                  <Moon className="mr-2 h-4 w-4" />
-                ) : (
-                  <Sun className="mr-2 h-4 w-4" />
-                )}
-                <span>{isDark ? "Dark Mode" : "Light Mode"}</span>
-              </div>
-              <div
-                className={`w-8 h-4 rounded-full relative transition-colors  ${isDark ? "bg-primary" : "bg-white"}`}
-              >
-                <div
-                  className={`absolute top-1 w-2 h-2 rounded-full bg-base-content transition-all ${isDark ? "right-1" : "left-1"}`}
+            Log In
+          </Button>
+        ) : isLoggedIn === true ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-base-content/5 transition-all outline-none group">
+                <Avatar className="w-8 h-8 border border-primary/20 group-hover:border-primary transition-colors">
+                  <AvatarFallback>
+                    <User className="w-4 h-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <ChevronDown
+                  size={14}
+                  className="text-muted-foreground group-hover:text-primary transition-colors"
                 />
-              </div>
-            </DropdownMenuItem>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-56 mt-4 rounded-xl p-2 bg-base-100/90 backdrop-blur-lg"
+            >
+              <DropdownMenuLabel className="font-montserrat">
+                My Account
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="rounded-lg cursor-pointer py-2.5">
+                <Link href="/profile" className="flex w-full items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground pt-2 px-2">
+                Appearance
+              </DropdownMenuLabel>
 
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="rounded-lg cursor-pointer py-2.5 text-error hover:bg-error/10">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem
+                onClick={() => toggleTheme(isDark ? "light" : "dark")}
+                className="rounded-lg cursor-pointer py-2.5 flex justify-between items-center"
+              >
+                <div className="flex items-center">
+                  {isDark ? (
+                    <Moon className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Sun className="mr-2 h-4 w-4" />
+                  )}
+                  <span>{isDark ? "Dark Mode" : "Light Mode"}</span>
+                </div>
+                <div
+                  className={`w-8 h-4 rounded-full relative transition-colors  ${isDark ? "bg-primary" : "bg-white"}`}
+                >
+                  <div
+                    className={`absolute top-1 w-2 h-2 rounded-full bg-base-content transition-all ${isDark ? "right-1" : "left-1"}`}
+                  />
+                </div>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="rounded-lg cursor-pointer py-2.5 text-error hover:bg-error/10"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
       </div>
     </nav>
   );

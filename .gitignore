@@ -1,3 +1,6 @@
 .env
 .env.local
 .env.*.local
+
+# File upload user — berisi CV/resume pribadi, jangan dipublikasi
+uploads/

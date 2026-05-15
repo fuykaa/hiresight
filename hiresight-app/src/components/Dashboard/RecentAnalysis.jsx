@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { FileText, Calendar, ExternalLink } from "lucide-react";
 import {
@@ -9,8 +11,16 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
 const RecentAnalysis = ({ data }) => {
+  const router = useRouter();
+
+  const handleViewResult = (id) => {
+    sessionStorage.setItem("resume_id", id);
+    router.push("/analyze/result");
+  };
+
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
@@ -18,6 +28,7 @@ const RecentAnalysis = ({ data }) => {
         <Button
           variant="ghost"
           className="text-primary hover:text-primary hover:bg-primary/10 font-bold"
+          onClick={() => router.push("/resume")}
         >
           View All
         </Button>
@@ -53,6 +64,7 @@ const RecentAnalysis = ({ data }) => {
               <Button
                 variant="outline"
                 className="w-full font-bold gap-2 group/btn border-border hover:bg-primary hover:text-neutral-content transition-all"
+                onClick={() => handleViewResult(item.id)}
               >
                 View Result
                 <ExternalLink

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   Table,
@@ -10,12 +12,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, Trash2, FileText } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-const ResumeTable = ({ data }) => {
-  // Logika warna badge sesuai instruksi gambar
+const ResumeTable = ({ data, onDelete }) => {
+  const router = useRouter();
   const getScoreBadge = (score) => {
-    if (score >= 70) return "bg-success/20 text-success border-success/30";
-    if (score >= 50) return "bg-warning/20 text-warning border-warning/30";
+    if (score === "Belum dianalisis") return "bg-muted/40 text-muted-foreground border-muted/30";
+    const num = Number(score);
+    if (num >= 70) return "bg-success/20 text-success border-success/30";
+    if (num >= 50) return "bg-warning/20 text-warning border-warning/30";
     return "bg-error/20 text-error border-error/30";
   };
 
@@ -25,7 +30,7 @@ const ResumeTable = ({ data }) => {
         <TableHeader className="bg-muted/50">
           <TableRow>
             <TableHead className="font-bold">File Name</TableHead>
-            <TableHead className="font-bold">ATS Score</TableHead>
+            <TableHead className="font-bold">Status</TableHead>
             <TableHead className="font-bold">Date</TableHead>
             <TableHead className="text-right font-bold">Action</TableHead>
           </TableRow>
@@ -59,6 +64,10 @@ const ResumeTable = ({ data }) => {
                     variant="ghost"
                     size="sm"
                     className="hover:text-primary"
+                    onClick={() => {
+                      sessionStorage.setItem("resume_id", resume.id);
+                      router.push("/analyze/result");
+                    }}
                   >
                     <Eye className="w-4 h-4 mr-1" /> View
                   </Button>
@@ -66,6 +75,7 @@ const ResumeTable = ({ data }) => {
                     variant="ghost"
                     size="sm"
                     className="hover:text-error"
+                    onClick={() => onDelete && onDelete(resume.id)}
                   >
                     <Trash2 className="w-4 h-4 mr-1" /> Delete
                   </Button>

@@ -4,8 +4,10 @@ import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
 const Hero = () => {
+  const router = useRouter();
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -95,6 +97,7 @@ const Hero = () => {
         >
           <Button
             size="lg"
+            onClick={() => router.push("/register")}
             className="rounded-2xl px-10 h-14 text-lg font-bold group hover:bg-accent duration-300 shadow-lg shadow-primary/20 group active:scale-95 transition-transform"
           >
             Get Started
