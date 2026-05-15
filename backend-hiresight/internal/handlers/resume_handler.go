@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -27,6 +29,13 @@ func (h *ResumeHandler) UploadResume(c *gin.Context) {
 		return
 	}
 
+	// 2.5. Validasi tipe file — PDF dan DOCX didukung
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	if ext != ".pdf" && ext != ".docx" {
+		c.JSON(400, gin.H{"error": "Hanya file PDF atau DOCX yang didukung"})
+		return
+	}
+
 	// 3. Ambil data teks tambahan
 	jobPosition := c.PostForm("job_position")
 	jobDescription := c.PostForm("job_description")
@@ -39,11 +48,12 @@ func (h *ResumeHandler) UploadResume(c *gin.Context) {
 	}
 
 	// 5. Simpan metadata ke tabel resumes
+	fileType := strings.TrimPrefix(ext, ".")
 	newResume := models.Resume{
 		UserID:         uuid.MustParse(userID),
 		FileName:       file.Filename,
 		FilePath:       filePath,
-		FileType:       "pdf", // Bisa didapat dari ekstensi file
+		FileType:       fileType,
 		JobPosition:    jobPosition,
 		JobDescription: jobDescription,
 	}

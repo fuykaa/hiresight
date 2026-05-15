@@ -45,3 +45,9 @@ func (r *ResumeRepository) FindAllByUserID(userID string) ([]models.Resume, erro
 func (r *ResumeRepository) Delete(resumeID string, userID string) error {
 	return r.DB.Where("id = ? AND user_id = ?", resumeID, userID).Unscoped().Delete(&models.Resume{}).Error
 }
+
+func (r *ResumeRepository) UpdateJobDescription(resumeID, userID, jobDescription string) error {
+	return r.DB.Model(&models.Resume{}).
+		Where("id = ? AND user_id = ?", resumeID, userID).
+		Update("job_description", jobDescription).Error
+}

@@ -60,7 +60,21 @@ func (h *ProfileHandler) GetMyProfile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, profile)
+	user, err := h.Repo.FindByUserID(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil data user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":          profile.ID,
+		"user_id":     profile.UserID,
+		"full_name":   profile.FullName,
+		"bio":         profile.Bio,
+		"avatar_path": profile.AvatarPath,
+		"updated_at":  profile.UpdatedAt,
+		"email":       user.Email,
+	})
 }
 
 func (h *ProfileHandler) UploadAvatar(c *gin.Context) {

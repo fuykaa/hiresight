@@ -14,11 +14,21 @@ type Config struct {
 	DBPassword string
 	DBName     string
 	JWTSecret  string
+	CORSOrigin string
 }
 
 func LoadConfig() *Config {
-	// Memuat file .env (abaikan jika tidak ada di production)
-	godotenv.Load("../.env")
+	// Coba load .env dari beberapa lokasi agar bisa dijalankan dari root maupun dari backend-hiresight/
+	for _, path := range []string{".env", "../.env"} {
+		if err := godotenv.Load(path); err == nil {
+			break
+		}
+	}
+
+	corsOrigin := os.Getenv("CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "http://localhost:3000"
+	}
 
 	return &Config{
 		DBHost:     os.Getenv("DB_HOST"),
@@ -27,6 +37,7 @@ func LoadConfig() *Config {
 		DBPassword: os.Getenv("DB_PASSWORD"),
 		DBName:     os.Getenv("DB_NAME"),
 		JWTSecret:  os.Getenv("JWT_SECRET"),
+		CORSOrigin: corsOrigin,
 	}
 }
 
