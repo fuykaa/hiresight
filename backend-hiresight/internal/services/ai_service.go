@@ -55,8 +55,7 @@ Cek apakah setiap keyword ditemukan secara eksplisit di CV. Kenali padanan resmi
 
 Jangan tandai found=true jika hanya ada konsep umum yang tidak spesifik.
 Catat di section mana keyword itu ditemukan: "skills", "experience", "education", "summary", atau null.
-Hitung berapa kali keyword (atau padanan resminya) muncul di SELURUH CV — di semua section. Kembalikan di field "occurrence_count".
-Jika found_in_cv=false, occurrence_count=0. Jika found=true tapi hanya 1 kali, occurrence_count=1.
+Selalu kembalikan "occurrence_count": 0 — sistem akan menghitung ini secara terpisah.
 
 ## TUGAS 3 — Tentukan candidate_profile
 
@@ -229,6 +228,11 @@ func AnalyzeWithGroq(cvText, jdText string) (*AIResult, error) {
 	var result AIResult
 	if err := json.Unmarshal([]byte(rawJSON), &result); err != nil {
 		return nil, fmt.Errorf("gagal parse JSON dari Groq: %w", err)
+	}
+
+	lowerCV := strings.ToLower(cvText)
+	for i, kw := range result.Keywords {
+		result.Keywords[i].OccurrenceCount = strings.Count(lowerCV, strings.ToLower(kw.Keyword))
 	}
 
 	return &result, nil
