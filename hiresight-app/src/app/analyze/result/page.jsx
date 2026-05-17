@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  LayoutDashboard,
   Download,
   Upload,
   CheckCircle2,
@@ -162,6 +163,14 @@ export default function AnalyzeResult() {
           <h1 className="text-xl font-bold uppercase tracking-widest text-primary">
             Analyze Result
           </h1>
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/dashboard")}
+            className="flex items-center gap-2 text-muted-foreground hover:text-primary font-bold p-0 hover:bg-transparent"
+          >
+            <LayoutDashboard size={20} />
+            Dashboard
+          </Button>
         </header>
 
         {/* --- SECTION: DOCUMENT INFORMATION --- */}

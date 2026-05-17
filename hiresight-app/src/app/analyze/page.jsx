@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Upload, FileText, X, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Upload, FileText, X, Loader2, AlertCircle, LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,7 +124,7 @@ export default function AnalyzePage() {
         <header className="flex items-center justify-between border-b border-border pb-6">
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold mb-8 group bg-transparent border-none cursor-pointer"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold group bg-transparent border-none cursor-pointer"
           >
             <ArrowLeft
               size={20}
@@ -135,6 +135,13 @@ export default function AnalyzePage() {
           <h1 className="text-xl font-bold uppercase tracking-widest text-primary">
             Upload & Analyze
           </h1>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold group bg-transparent border-none cursor-pointer"
+          >
+            <LayoutDashboard size={20} />
+            Dashboard
+          </button>
         </header>
 
         <div className="space-y-8">
