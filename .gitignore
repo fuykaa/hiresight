@@ -4,3 +4,8 @@
 
 # File upload user — berisi CV/resume pribadi, jangan dipublikasi
 uploads/
+
+# Build artifacts & binaries
+node_modules/
+backend-hiresight/server
+*.tar.gz
