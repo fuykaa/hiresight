@@ -18,14 +18,10 @@ npm run build
 if ($LASTEXITCODE -ne 0) { Pop-Location; Fail "npm run build gagal" }
 Ok "Build selesai"
 
-# 2. Package standalone + static + public
+# 2. Package standalone (Next.js 16 Turbopack sudah menyertakan static & public di dalam standalone)
 Step 2 "Package standalone..."
-Copy-Item -Recurse -Force .next\static .next\standalone\.next\static
-if (Test-Path public) {
-    Copy-Item -Recurse -Force public .next\standalone\public
-}
 Pop-Location
-tar -czf frontend-deploy.tar.gz -C hiresight-app\.next\standalone .
+tar -czf frontend-deploy.tar.gz -C "hiresight-app/.next/standalone" .
 if ($LASTEXITCODE -ne 0) { Fail "tar gagal" }
 Ok "Package: frontend-deploy.tar.gz ($([math]::Round((Get-Item frontend-deploy.tar.gz).Length/1MB,1)) MB)"
 
@@ -44,10 +40,8 @@ sleep 1
 rm -rf ~/hiresight-frontend
 mkdir -p ~/hiresight-frontend
 tar -xzf ~/frontend-deploy.tar.gz -C ~/hiresight-frontend
-# pindah public ke lokasi yang benar (jika ada di root standalone)
-[ -d ~/hiresight-frontend/public ] && mv ~/hiresight-frontend/public ~/hiresight-frontend/hiresight-app/public 2>/dev/null || true
 chmod -R 755 ~/hiresight-frontend
-cd ~/hiresight-frontend/hiresight-app
+cd ~/hiresight-frontend
 PORT=3000 nohup node server.js > ~/frontend.log 2>&1 &
 sleep 3
 STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000)
