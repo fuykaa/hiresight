@@ -63,7 +63,8 @@ Gunakan kriteria ketat berikut:
 
 "experienced":
 - Ada pengalaman kerja PROFESIONAL (full-time, part-time, atau kontrak, BUKAN magang/PKL)
-- Durasi ≥ 1 tahun total, relevan dengan bidang JD
+- Durasi ≥ 1 tahun total (JUMLAHKAN semua entry termasuk yang pendek), relevan dengan bidang JD
+- Contoh: 6 posisi masing-masing 2 bulan = 12 bulan = 1 tahun → "experienced"
 - Contoh: Software Engineer 2 tahun di perusahaan, Backend Developer freelance 1.5 tahun
 
 "fresh_graduate":
@@ -117,8 +118,12 @@ Kembalikan angka integer dari frasa tersebut. Jika tidak ada persyaratan eksplis
 Contoh: "minimal 2 tahun pengalaman" → 2; "5+ years of experience" → 5; tidak ada persyaratan → 0
 
 TUGAS 6B — years_of_experience (dari CV):
-Hitung total tahun pengalaman kerja PROFESIONAL dari CV (full-time, part-time, kontrak — BUKAN magang/PKL, organisasi kampus).
-Gabungkan semua periode kerja profesional, estimasi boleh jika tanggal tidak lengkap.
+Hitung total bulan dari SEMUA pengalaman kerja profesional (full-time, part-time, kontrak — BUKAN magang/PKL, organisasi kampus), lalu bagi 12.
+WAJIB jumlahkan SEMUA entri termasuk yang durasinya sangat pendek (1–3 bulan).
+Jangan hanya ambil yang terpanjang atau terbaru — semua entri dihitung.
+Contoh: 6 posisi × 2 bulan = 12 bulan = 1.0 tahun → kembalikan 1.0
+Contoh: posisi A (3 bln) + B (4 bln) + C (6 bln) = 13 bulan = 1.1 tahun → kembalikan 1.1
+Estimasi boleh jika tanggal tidak lengkap.
 Jika tidak ada pengalaman profesional → kembalikan 0.
 Kembalikan angka float dengan satu desimal (contoh: 1.5, 3.0, 0.5).
 

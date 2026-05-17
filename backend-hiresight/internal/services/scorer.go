@@ -197,10 +197,12 @@ func GenerateFeedback(result *AIResult, scores ScoreResult) (format, content, ke
 		kwBuf.WriteString("CV kamu kekurangan banyak keyword penting dari job description. Perbaikan di area ini akan sangat meningkatkan skor ATS kamu.")
 	}
 	if len(missingRequired) > 0 {
-		kwBuf.WriteString("\n\nKeyword wajib yang belum ditemukan: " + strings.Join(missingRequired, ", ") + ".")
+		kwBuf.WriteString("\n\nKeyword wajib yang belum ditemukan: " + strings.Join(missingRequired, ", ") +
+			". Tambahkan kata-kata ini persis seperti tertulis ke CV kamu — ATS perusahaan umumnya menggunakan exact keyword matching, sehingga istilah serupa atau sinonim tidak akan terhitung.")
 	}
 	if len(missingPreferred) > 0 {
-		kwBuf.WriteString("\n\nKeyword pilihan yang bisa ditambahkan: " + strings.Join(missingPreferred, ", ") + ".")
+		kwBuf.WriteString("\n\nKeyword pilihan yang bisa ditambahkan: " + strings.Join(missingPreferred, ", ") +
+			". Menambahkan keyword ini secara eksplisit (bukan hanya konsep yang terkait) akan meningkatkan peluang lolos filter ATS.")
 	}
 	keywords = kwBuf.String()
 
