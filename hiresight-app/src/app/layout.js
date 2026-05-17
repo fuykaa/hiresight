@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { icons } from "lucide-react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,8 +19,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "AI ATS Checker",
+  title: "HireSight",
   description: "Improve your resume with AI",
+  icons: {
+    icon: "/logo.svg",
+  },
 };
 
 export default function RootLayout({ children }) {
