@@ -19,7 +19,7 @@ type Config struct {
 
 func LoadConfig() *Config {
 	// Coba load .env dari beberapa lokasi agar bisa dijalankan dari root maupun dari backend-hiresight/
-	for _, path := range []string{".env", "../.env"} {
+	for _, path := range []string{".env", "../.env", "../../.env", "../../../.env"} {
 		if err := godotenv.Load(path); err == nil {
 			break
 		}

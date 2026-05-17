@@ -1,9 +1,27 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Github, Twitter, Instagram, Mail } from "lucide-react";
+import logo from "@/assets/logo.svg";
+import logoDark from "@/assets/logo-dark.svg";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    setIsDark(root.classList.contains("dark"));
+
+    const observer = new MutationObserver(() => {
+      setIsDark(root.classList.contains("dark"));
+    });
+
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <footer className="w-full bg-base-300 border-t border-border mt-20">
@@ -13,13 +31,16 @@ export default function Footer() {
           <div className="space-y-4 max-w-xs flex flex-col justify-center items-center md:justify-start md:items-start text-center md:text-left">
             <Link href="/">
               <div className="flex items-center gap-2 group">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform">
-                  <span className="text-primary-content font-black text-xs">
-                    L
-                  </span>
-                </div>
+                <Image
+                  src={isDark ? logoDark : logo}
+                  alt="HireSight Logo"
+                  width={32}
+                  height={32}
+                  priority
+                  className="group-hover:rotate-12 transition-transform"
+                />
                 <p className="font-montserrat font-bold text-xl tracking-tight">
-                  LOGO
+                  HireSight
                 </p>
               </div>
             </Link>
@@ -81,14 +102,14 @@ export default function Footer() {
             </div>
             <div className="flex items-center gap-2 text-foreground text-sm justify-start md:justify-end pt-2">
               <Mail size={14} />
-              <span>support@logo.com</span>
+              <span>support@hiresight.com</span>
             </div>
           </div>
         </div>
 
         {/* --- COPYRIGHT SECTION --- */}
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-foreground font-medium uppercase tracking-tighter">
-          <p>© {currentYear} LOGO Inc. Hak Cipta Dilindungi.</p>
+          <p>© {currentYear} HireSight Inc. Hak Cipta Dilindungi.</p>
         </div>
       </div>
     </footer>

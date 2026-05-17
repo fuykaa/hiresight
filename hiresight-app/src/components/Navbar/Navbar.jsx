@@ -3,8 +3,11 @@
 import React, { useEffect, useState } from "react";
 import NavButton from "./NavButton";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import logo from "@/assets/logo.svg";
+import logoDark from "@/assets/logo-dark.svg";
 import {
   Menu,
   User,
@@ -84,9 +87,13 @@ export default function Navbar() {
 
         {/* Tengah: Logo */}
         <Link href="/">
-          <p className="font-montserrat font-bold text-lg tracking-tighter">
-            LOGO
-          </p>
+          <Image
+            src={isDark ? logoDark : logo}
+            alt="HireSight Logo"
+            width={32}
+            height={32}
+            priority
+          />
         </Link>
 
         {/* Kanan: Hamburger Menu */}
@@ -167,21 +174,26 @@ export default function Navbar() {
       </div>
 
       {/* --- DESKTOP VERSION --- */}
-      <div className="hidden md:flex w-full items-center justify-between gap-8">
+      <div className="hidden md:flex w-full items-center gap-8">
         {/* Logo Section */}
         <Link href="/">
-          <div className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform">
-              <span className="text-primary-content font-black text-xs">L</span>
-            </div>
-            <p className="font-montserrat font-bold text-lg tracking-tight group-hover:text-primary transition-colors">
-              LOGO
+          <div className="flex items-center gap-2 group flex-shrink-0">
+            <Image
+              src={isDark ? logoDark : logo}
+              alt="HireSight Logo"
+              width={32}
+              height={32}
+              priority
+              className="group-hover:rotate-12 transition-transform"
+            />
+            <p className="font-montserrat font-bold text-lg tracking-tight group-hover:text-primary transition-colors whitespace-nowrap">
+              HireSight
             </p>
           </div>
         </Link>
 
         {/* Navigation Links */}
-        <div className="flex w-full justify-evenly items-center p-1 rounded-xl border border-base-content/5">
+        <div className="flex flex-1 justify-evenly items-center p-1 rounded-xl border border-base-content/5">
           <NavButton
             text="Dashboard"
             href="/dashboard"
@@ -198,14 +210,14 @@ export default function Navbar() {
         {isLoggedIn === false ? (
           <Button
             onClick={() => router.push("/login")}
-            className="rounded-full font-bold px-5"
+            className="rounded-full font-bold px-5 flex-shrink-0"
           >
             Log In
           </Button>
         ) : isLoggedIn === true ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-base-content/5 transition-all outline-none group">
+              <button className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-base-content/5 transition-all outline-none group flex-shrink-0">
                 <Avatar className="w-8 h-8 border border-primary/20 group-hover:border-primary transition-colors">
                   <AvatarFallback>
                     <User className="w-4 h-4" />
