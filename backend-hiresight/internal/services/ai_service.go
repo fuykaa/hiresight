@@ -233,6 +233,7 @@ func AnalyzeWithGroq(cvText, jdText string) (*AIResult, error) {
 	lowerCV := strings.ToLower(cvText)
 	for i, kw := range result.Keywords {
 		result.Keywords[i].OccurrenceCount = strings.Count(lowerCV, strings.ToLower(kw.Keyword))
+		result.Keywords[i].FoundInCV = result.Keywords[i].OccurrenceCount > 0
 	}
 
 	return &result, nil

@@ -3,7 +3,9 @@ package handlers
 import (
 	"backend-hiresight/internal/models"
 	"backend-hiresight/internal/repository"
-	"fmt"
+	"backend-hiresight/internal/services"
+	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -15,6 +17,13 @@ type ProfileHandler struct {
 	Repo *repository.UserRepository
 }
 
+func avatarsContainer() string {
+	if v := os.Getenv("AZURE_STORAGE_CONTAINER_AVATARS"); v != "" {
+		return v
+	}
+	return "avatars"
+}
+
 func (h *ProfileHandler) UpdateProfile(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -22,7 +31,6 @@ func (h *ProfileHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	// 2. Tentukan field apa saja yang boleh diupdate
 	var input struct {
 		FullName string `json:"full_name"`
 		Bio      string `json:"bio"`
@@ -33,7 +41,6 @@ func (h *ProfileHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	// 3. Siapkan data untuk diupdate (hanya masukkan yang tidak kosong)
 	updateData := make(map[string]interface{})
 	if input.FullName != "" {
 		updateData["full_name"] = input.FullName
@@ -42,7 +49,6 @@ func (h *ProfileHandler) UpdateProfile(c *gin.Context) {
 		updateData["bio"] = input.Bio
 	}
 
-	// 4. Eksekusi update
 	if err := h.Repo.UpdateProfile(userID.(string), updateData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memperbarui profil"})
 		return
@@ -78,53 +84,74 @@ func (h *ProfileHandler) GetMyProfile(c *gin.Context) {
 }
 
 func (h *ProfileHandler) UploadAvatar(c *gin.Context) {
-    userID, _ := c.Get("userID")
+	userID, _ := c.Get("userID")
 
-    file, err := c.FormFile("avatar")
-    if err != nil {
-        c.JSON(400, gin.H{"error": "File tidak ditemukan"})
-        return
-    }
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		c.JSON(400, gin.H{"error": "File tidak ditemukan"})
+		return
+	}
 
-    // Validasi: Pastikan yang diupload adalah gambar
-    ext := filepath.Ext(file.Filename)
-    if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
-        c.JSON(400, gin.H{"error": "Hanya file gambar yang diizinkan (jpg/png)"})
-        return
-    }
+	ext := filepath.Ext(file.Filename)
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+		c.JSON(400, gin.H{"error": "Hanya file gambar yang diizinkan (jpg/png)"})
+		return
+	}
 
-    // Simpan file
-    filePath := "./uploads/avatars/" + userID.(string) + ext
-    if err := c.SaveUploadedFile(file, filePath); err != nil {
-        c.JSON(500, gin.H{"error": "Gagal simpan gambar"})
-        return
-    }
+	f, err := file.Open()
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Gagal membaca file"})
+		return
+	}
+	defer f.Close()
+	fileBytes, err := io.ReadAll(f)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Gagal membaca file"})
+		return
+	}
 
-    // Update path di database
-    if err := h.Repo.DB.Model(&models.Profile{}).Where("user_id = ?", userID).Update("avatar_path", filePath).Error; err != nil {
-        c.JSON(500, gin.H{"error": "Gagal update database"})
-        return
-    }
+	// Blob name pakai userID agar overwrite avatar lama otomatis
+	blobName := userID.(string) + ext
+	if err := services.UploadToBlob(avatarsContainer(), blobName, fileBytes); err != nil {
+		c.JSON(500, gin.H{"error": "Gagal simpan gambar ke storage"})
+		return
+	}
 
-    c.JSON(200, gin.H{"message": "Avatar berhasil diperbarui"})
+	if err := h.Repo.DB.Model(&models.Profile{}).Where("user_id = ?", userID).Update("avatar_path", blobName).Error; err != nil {
+		c.JSON(500, gin.H{"error": "Gagal update database"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Avatar berhasil diperbarui"})
 }
 
 func (h *ProfileHandler) GetAvatar(c *gin.Context) {
-    userID, _ := c.Get("userID")
-    
-    var profile models.Profile
-    if err := h.Repo.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
-        c.JSON(404, gin.H{"error": "Profil tidak ditemukan"})
-        return
-    }
+	userID, _ := c.Get("userID")
 
-    if profile.AvatarPath == "" {
-        // Kirim gambar default jika user belum punya avatar
-        c.File("./uploads/avatars/default.jpg")
-        return
-    }
-		c.Header("Cache-Control", "public, max-age=3600")
-    c.File(profile.AvatarPath)
+	var profile models.Profile
+	if err := h.Repo.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+		c.JSON(404, gin.H{"error": "Profil tidak ditemukan"})
+		return
+	}
+
+	if profile.AvatarPath == "" {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Avatar belum diatur"})
+		return
+	}
+
+	fileBytes, err := services.DownloadBlobBytes(avatarsContainer(), profile.AvatarPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil avatar"})
+		return
+	}
+
+	contentType := "image/jpeg"
+	if filepath.Ext(profile.AvatarPath) == ".png" {
+		contentType = "image/png"
+	}
+
+	c.Header("Cache-Control", "public, max-age=3600")
+	c.Data(http.StatusOK, contentType, fileBytes)
 }
 
 func (h *ProfileHandler) DeleteAvatar(c *gin.Context) {
@@ -140,8 +167,9 @@ func (h *ProfileHandler) DeleteAvatar(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Anda tidak memiliki avatar untuk dihapus"})
 		return
 	}
-	if err := os.Remove(profile.AvatarPath); err != nil {
-		fmt.Printf("Warning: Gagal hapus file fisik: %v\n", err)
+
+	if err := services.DeleteBlob(avatarsContainer(), profile.AvatarPath); err != nil {
+		log.Printf("Warning: Gagal hapus blob avatar: %v", err)
 	}
 
 	if err := h.Repo.ClearAvatarPath(userID.(string)); err != nil {
@@ -149,5 +177,5 @@ func (h *ProfileHandler) DeleteAvatar(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Avatar berhasil dihapus dan kembali ke default"})
+	c.JSON(http.StatusOK, gin.H{"message": "Avatar berhasil dihapus"})
 }

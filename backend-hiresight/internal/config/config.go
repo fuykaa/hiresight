@@ -15,6 +15,7 @@ type Config struct {
 	DBName     string
 	JWTSecret  string
 	CORSOrigin string
+	DBSSLMode  string
 }
 
 func LoadConfig() *Config {
@@ -30,6 +31,11 @@ func LoadConfig() *Config {
 		corsOrigin = "http://localhost:3000"
 	}
 
+	sslMode := os.Getenv("DB_SSLMODE")
+	if sslMode == "" {
+		sslMode = "disable"
+	}
+
 	return &Config{
 		DBHost:     os.Getenv("DB_HOST"),
 		DBPort:     os.Getenv("DB_PORT"),
@@ -38,13 +44,14 @@ func LoadConfig() *Config {
 		DBName:     os.Getenv("DB_NAME"),
 		JWTSecret:  os.Getenv("JWT_SECRET"),
 		CORSOrigin: corsOrigin,
+		DBSSLMode:  sslMode,
 	}
 }
 
 // Method untuk membuat string DSN secara otomatis
 func (c *Config) GetDSN() string {
 	return fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta",
-		c.DBHost, c.DBUser, c.DBPassword, c.DBName, c.DBPort,
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=Asia/Jakarta",
+		c.DBHost, c.DBUser, c.DBPassword, c.DBName, c.DBPort, c.DBSSLMode,
 	)
 }

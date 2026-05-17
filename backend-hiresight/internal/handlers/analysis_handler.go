@@ -11,12 +11,11 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"path/filepath"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/ledongthuc/pdf"
 	"gorm.io/datatypes"
 )
 
@@ -59,7 +58,7 @@ func (h *AnalysisHandler) TriggerAnalysis(c *gin.Context) {
 	h.Repo.Save(&newAnalysis)
 
 	// 3. Jalankan analisis AI di background goroutine
-	go h.runAnalysis(&newAnalysis, resume.FilePath, resume.JobDescription, resume.JobPosition)
+	go h.runAnalysis(&newAnalysis, resume.FilePath, resume.FileType, resume.JobDescription, resume.JobPosition)
 
 	c.JSON(202, gin.H{"message": "Analisis dimulai", "analysis_id": newAnalysis.ID, "status": "processing"})
 }
@@ -89,96 +88,88 @@ func (h *AnalysisHandler) GetResult(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-// runAnalysis dijalankan sebagai goroutine — ekstrak teks, panggil Groq, hitung skor, simpan ke DB
-func (h *AnalysisHandler) runAnalysis(analysis *models.AnalysisResult, filePath, jobDescription, jobPosition string) {
-	// 1. Ekstrak teks berdasarkan tipe file
+// runAnalysis dijalankan sebagai goroutine — download dari blob, ekstrak teks, panggil Groq, hitung skor, simpan ke DB
+func (h *AnalysisHandler) runAnalysis(analysis *models.AnalysisResult, blobName, fileType, jobDescription, jobPosition string) {
+	markFailed := func(msg string, err error) {
+		analysis.Status = "failed"
+		h.Repo.Save(analysis)
+		log.Printf("[runAnalysis] %s untuk resume_id=%s: %v", msg, analysis.ResumeID, err)
+	}
+
+	// 1. Download file dari Azure Blob Storage
+	resumesContainer := os.Getenv("AZURE_STORAGE_CONTAINER_RESUMES")
+	if resumesContainer == "" {
+		resumesContainer = "resumes"
+	}
+
+	fileBytes, err := services.DownloadBlobBytes(resumesContainer, blobName)
+	if err != nil {
+		markFailed("Gagal download file dari blob", err)
+		return
+	}
+
+	// 2. Ekstrak teks berdasarkan tipe file
 	var cvText string
-	var err error
-	switch strings.ToLower(filepath.Ext(filePath)) {
-	case ".docx":
-		cvText, err = extractDOCXText(filePath)
+	switch strings.ToLower(fileType) {
+	case "docx":
+		cvText, err = extractDOCXFromBytes(fileBytes)
 	default:
-		cvText, err = extractPDFText(filePath)
+		cvText, err = services.ExtractPDFWithFormRecognizer(fileBytes)
 	}
 	if err != nil || len(strings.TrimSpace(cvText)) < 100 {
-		analysis.Status = "failed"
-		h.Repo.Save(analysis)
-		log.Printf("[runAnalysis] Ekstraksi teks gagal atau terlalu pendek untuk resume_id=%s: %v", analysis.ResumeID, err)
+		markFailed("Ekstraksi teks gagal atau terlalu pendek", err)
 		return
 	}
 
-	// 2. Panggil Groq API
+	// 3. Panggil Groq API
 	geminiResult, err := services.AnalyzeWithGroq(cvText, jobDescription)
 	if err != nil {
-		analysis.Status = "failed"
-		h.Repo.Save(analysis)
-		log.Printf("[runAnalysis] Groq API error untuk resume_id=%s: %v", analysis.ResumeID, err)
+		markFailed("Groq API error", err)
 		return
 	}
 
-	// 3. Hitung sections_nonstandard di Go dari selisih all_headers vs sections_detected
+	// 4. Hitung sections_nonstandard di Go dari selisih all_headers vs sections_detected
 	geminiResult.SectionsNonstandard = services.ComputeNonstandard(
 		geminiResult.AllHeadersDetected,
 		geminiResult.SectionsDetected,
 	)
 
-	// 4. Hitung skor dan generate feedback deterministik
+	// 5. Hitung skor dan generate feedback deterministik
 	scores := services.CalculateScores(geminiResult, jobPosition)
 	feedbackFormat, feedbackContent, feedbackKeywords := services.GenerateFeedback(geminiResult, scores)
 
-	// 5. Marshal keyword list ke JSON untuk disimpan di kolom keyword_analysis
+	// 6. Marshal keyword list ke JSON untuk disimpan di kolom keyword_analysis
 	keywordsJSON, err := json.Marshal(geminiResult.Keywords)
 	if err != nil {
-		analysis.Status = "failed"
-		h.Repo.Save(analysis)
-		log.Printf("[runAnalysis] Gagal marshal keywords: %v", err)
+		markFailed("Gagal marshal keywords", err)
 		return
 	}
 
-	// 6. Update record dengan hasil lengkap
-	analysis.OverallScore      = scores.OverallScore
-	analysis.ATSScore          = scores.ATSScore
-	analysis.KeywordScore      = scores.KeywordScore
-	analysis.FormatScore       = scores.FormatScore
-	analysis.KeywordAnalysis   = datatypes.JSON(keywordsJSON)
-	analysis.CandidateProfile  = geminiResult.CandidateProfile
-	analysis.FeedbackFormat    = feedbackFormat
-	analysis.FeedbackContent   = feedbackContent
-	analysis.FeedbackKeywords  = feedbackKeywords
-	analysis.Status            = "completed"
+	// 7. Update record dengan hasil lengkap
+	analysis.OverallScore     = scores.OverallScore
+	analysis.ATSScore         = scores.ATSScore
+	analysis.KeywordScore     = scores.KeywordScore
+	analysis.FormatScore      = scores.FormatScore
+	analysis.KeywordAnalysis  = datatypes.JSON(keywordsJSON)
+	analysis.CandidateProfile = geminiResult.CandidateProfile
+	analysis.FeedbackFormat   = feedbackFormat
+	analysis.FeedbackContent  = feedbackContent
+	analysis.FeedbackKeywords = feedbackKeywords
+	analysis.Status           = "completed"
 
 	if err := h.Repo.Save(analysis); err != nil {
 		log.Printf("[runAnalysis] Gagal simpan hasil ke DB untuk resume_id=%s: %v", analysis.ResumeID, err)
 	}
 }
 
-// extractPDFText mengekstrak teks mentah dari file PDF berbasis teks
-func extractPDFText(filePath string) (string, error) {
-	f, r, err := pdf.Open(filePath)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-
-	var buf bytes.Buffer
-	b, err := r.GetPlainText()
-	if err != nil {
-		return "", err
-	}
-	buf.ReadFrom(b)
-	return buf.String(), nil
-}
-
-// extractDOCXText mengekstrak teks mentah dari file DOCX (Office Open XML).
-// DOCX adalah arsip ZIP yang berisi word/document.xml — teks ada di elemen <w:t>.
-func extractDOCXText(filePath string) (string, error) {
+// extractDOCXFromBytes mengekstrak teks dari bytes DOCX (Office Open XML).
+func extractDOCXFromBytes(data []byte) (string, error) {
 	const wNS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 
-	r, err := zip.OpenReader(filePath)
+	r, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil {
 		return "", fmt.Errorf("bukan file DOCX yang valid: %w", err)
 	}
-	defer r.Close()
 
 	for _, f := range r.File {
 		if f.Name != "word/document.xml" {
