@@ -17,7 +17,7 @@ const UploadSection = () => {
         className="relative group overflow-hidden border-2 border-dashed border-muted-foreground/20 hover:border-primary transition-all cursor-pointer"
       >
         <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 blur opacity-0 group-hover:opacity-100 transition-opacity" />
-        <CardContent className="relative flex flex-col items-center justify-center text-center p-12">
+        <CardContent className="relative flex flex-col items-center justify-center text-center p-6 md:p-12">
           <div className="w-16 h-16 bg-muted text-primary rounded-full flex items-center justify-center mb-6 shadow-inner">
             <Upload size={32} />
           </div>

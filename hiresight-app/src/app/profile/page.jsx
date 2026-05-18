@@ -74,7 +74,7 @@ export default function ProfilePage() {
     : "?";
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 md:p-12 md:pt-32">
+    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 pt-24 md:p-12 md:pt-32">
       <div className="max-w-5xl mx-auto">
         {/* Back Button */}
         <button
@@ -90,9 +90,9 @@ export default function ProfilePage() {
 
         <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[500px]">
           {/* Left Section: Avatar */}
-          <div className="w-full md:w-1/3 bg-muted/30 p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-border space-y-6">
-            <Avatar className="w-40 h-40 border-4 border-background shadow-xl">
-              <AvatarFallback className="bg-primary/10 text-primary text-4xl font-bold">
+          <div className="w-full md:w-1/3 bg-muted/30 p-6 md:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-border space-y-6">
+            <Avatar className="w-28 h-28 md:w-40 md:h-40 border-4 border-background shadow-xl">
+              <AvatarFallback className="bg-primary/10 text-primary text-2xl md:text-4xl font-bold">
                 {loading ? <Loader2 className="animate-spin" /> : initials}
               </AvatarFallback>
             </Avatar>

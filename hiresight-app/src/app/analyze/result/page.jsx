@@ -145,7 +145,7 @@ export default function AnalyzeResult() {
     : "-";
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 md:p-12 md:pt-32">
+    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 pt-24 md:p-12 md:pt-32">
       <div className="max-w-4xl mx-auto space-y-10">
         {/* --- HEADER --- */}
         <header className="flex items-center justify-between border-b border-border pb-6">
@@ -169,7 +169,7 @@ export default function AnalyzeResult() {
             className="flex items-center gap-2 text-muted-foreground hover:text-primary font-bold p-0 hover:bg-transparent"
           >
             <LayoutDashboard size={20} />
-            Dashboard
+            <span className="hidden sm:inline">Dashboard</span>
           </Button>
         </header>
 
@@ -185,7 +185,7 @@ export default function AnalyzeResult() {
                   <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">
                     Filename
                   </p>
-                  <p className="font-bold truncate max-w-[200px] text-sm">
+                  <p className="font-bold truncate max-w-[150px] sm:max-w-xs text-sm">
                     {resume?.file_name ?? "-"}
                   </p>
                 </div>
@@ -250,7 +250,7 @@ export default function AnalyzeResult() {
                 key={index}
                 className="bg-card border-border group hover:border-primary/50 transition-colors shadow-sm"
               >
-                <CardContent className="p-8 text-center space-y-2">
+                <CardContent className="p-4 md:p-8 text-center space-y-2">
                   <p className={`text-4xl font-black tracking-tighter ${getScoreColor(score.value)}`}>
                     {score.value}
                     <span className="text-lg text-muted-foreground">%</span>

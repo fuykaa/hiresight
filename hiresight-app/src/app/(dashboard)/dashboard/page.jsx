@@ -74,7 +74,7 @@ const DashboardPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 md:p-12 md:pt-30">
+    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 pt-24 md:p-12 md:pt-32">
       <div className="max-w-6xl mx-auto space-y-12">
         <DashboardHeader name={profileName} />
         <StatsCards stats={statsData} />

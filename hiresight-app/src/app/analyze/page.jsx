@@ -118,7 +118,7 @@ export default function AnalyzePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 md:p-12 md:pt-32">
+    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 pt-24 md:p-12 md:pt-32">
       <div className="max-w-4xl mx-auto space-y-10">
         {/* --- HEADER --- */}
         <header className="flex items-center justify-between border-b border-border pb-6">
@@ -140,7 +140,7 @@ export default function AnalyzePage() {
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold group bg-transparent border-none cursor-pointer"
           >
             <LayoutDashboard size={20} />
-            Dashboard
+            <span className="hidden sm:inline">Dashboard</span>
           </button>
         </header>
 

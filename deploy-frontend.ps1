@@ -46,7 +46,7 @@ Step 4 "Deploy di VM..."
 set -e
 
 echo "--- [1/4] Stop proses lama ---"
-pkill -f "node server.js" 2>/dev/null || true
+fuser -k 3000/tcp 2>/dev/null || true
 sleep 1
 
 echo "--- [2/4] Ekstrak file baru ---"
@@ -79,8 +79,31 @@ server {
         alias /home/azureuser/hiresight-frontend/public/;
     }
 
-    # Backend Go — login, register, semua /api/*
-    location ~ ^/(login|register|api)(/|$) {
+    # Auth: POST /login + POST /register → Go backend; GET → Next.js page
+    location = /login {
+        set $upstream http://127.0.0.1:3000;
+        if ($request_method = POST) { set $upstream http://127.0.0.1:8081; }
+        proxy_pass $upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 120;
+    }
+
+    location = /register {
+        set $upstream http://127.0.0.1:3000;
+        if ($request_method = POST) { set $upstream http://127.0.0.1:8081; }
+        proxy_pass $upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 120;
+    }
+
+    # Backend Go — semua /api/*
+    location /api/ {
         proxy_pass http://127.0.0.1:8081;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
