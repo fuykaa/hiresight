@@ -198,11 +198,12 @@ Profil kandidat: %s
 Buat maksimal 5 template bullet point siap copy-paste untuk CV kandidat dengan ketentuan:
 
 1. Ambil konteks pengalaman/keahlian NYATA yang sudah ada di CV kandidat
-2. Rewrite dalam gaya LinkedIn: action verb + konteks + dampak/hasil
+2. Rewrite dalam gaya LinkedIn: action verb + konteks + dampak/hasil kuantitatif
 3. Sisipkan keyword yang hilang sebagai placeholder dalam format [NamaKeyword]
-4. Setiap template harus terdengar natural dan relevan dengan pengalaman nyata kandidat
-5. Jangan buat contoh fiktif — gunakan fakta dari CV yang ada
-6. Berlaku untuk semua bidang industri, bukan hanya IT
+4. Tambahkan MINIMAL SATU placeholder kuantitas per bullet yang mencerminkan dampak nyata — sesuaikan dengan bidang kandidat, contoh: [JumlahPeserta], [PersentasePeningkatan], [JumlahUnit], [DurasiProyek], [JumlahFollower], [NilaiProyek], [JumlahKlien] — jangan hardcode angka, biarkan kandidat mengisi sendiri
+5. Setiap template harus terdengar natural dan relevan dengan pengalaman nyata kandidat
+6. Jangan buat contoh fiktif — gunakan fakta dari CV yang ada
+7. Berlaku untuk semua bidang industri, bukan hanya IT
 
 Untuk kandidat "fresh_graduate": fokus pada proyek, magang, organisasi, dan skills
 Untuk kandidat "experienced": fokus pada pengalaman kerja profesional dan pencapaian
@@ -212,9 +213,9 @@ Balas HANYA dengan JSON array berikut. Tidak ada teks lain, tidak ada markdown:
 [
   {
     "section": "experience" | "skills" | "summary",
-    "template": "teks bullet point dengan [Placeholder] untuk keyword yang perlu diisi",
-    "placeholders": ["Keyword1", "Keyword2"],
-    "tip": "panduan singkat cara mengisi placeholder berdasarkan konteks kandidat ini"
+    "template": "teks bullet point dengan [Placeholder] untuk keyword dan [JumlahXxx] untuk kuantitas",
+    "placeholders": ["Keyword1", "JumlahXxx"],
+    "tip": "panduan singkat cara mengisi placeholder dan perkiraan angka yang wajar untuk bidang kandidat ini"
   }
 ]`
 
