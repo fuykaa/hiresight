@@ -22,9 +22,11 @@ jobs:
         run: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o server ./cmd/api/main.go
 
       - name: Setup SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 20.198.216.160 >> ~/.ssh/known_hosts
 
@@ -90,9 +92,11 @@ jobs:
           echo "Package size: $(du -sh frontend-deploy.tar.gz | cut -f1)"
 
       - name: Setup SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 20.198.216.160 >> ~/.ssh/known_hosts
 
