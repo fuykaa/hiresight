@@ -20,6 +20,9 @@ func main() {
 	if err := os.MkdirAll("uploads/resumes", os.ModePerm); err != nil {
 		log.Fatal("Gagal membuat folder uploads:", err)
 	}
+	if err := os.MkdirAll("uploads/avatars", os.ModePerm); err != nil {
+		log.Fatal("Gagal membuat folder uploads/avatars:", err)
+	}
 
 	// 2. Load Config & Koneksi Database
 	cfg := config.LoadConfig()

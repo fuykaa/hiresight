@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { ArrowLeft, User, Mail, Save, Edit2, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { ArrowLeft, User, Mail, Save, Edit2, Loader2, Camera } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import api from "@/lib/api";
 
 export default function ProfilePage() {
@@ -16,12 +16,28 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [avatarURL, setAvatarURL] = useState(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [userData, setUserData] = useState({
     fullName: "",
     email: "",
   });
   const [editName, setEditName] = useState("");
+
+  const loadAvatar = async () => {
+    try {
+      const res = await api.get("/api/profile/avatar", { responseType: "blob" });
+      const url = URL.createObjectURL(res.data);
+      setAvatarURL((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
+    } catch {
+      setAvatarURL(null);
+    }
+  };
 
   useEffect(() => {
     api
@@ -35,7 +51,37 @@ export default function ProfilePage() {
       })
       .catch(() => setError("Gagal memuat profil."))
       .finally(() => setLoading(false));
+
+    loadAvatar();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (avatarURL) URL.revokeObjectURL(avatarURL);
+    };
+  }, [avatarURL]);
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("avatar", file);
+    setUploadingAvatar(true);
+    setError("");
+    setSuccessMsg("");
+    try {
+      await api.put("/api/profile/avatar", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      await loadAvatar();
+      setSuccessMsg("Foto profil berhasil diperbarui.");
+    } catch {
+      setError("Gagal mengupload foto. Pastikan file jpg/png dan ukuran wajar.");
+    } finally {
+      setUploadingAvatar(false);
+      e.target.value = "";
+    }
+  };
 
   const handleEdit = () => {
     setEditName(userData.fullName);
@@ -91,11 +137,32 @@ export default function ProfilePage() {
         <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[500px]">
           {/* Left Section: Avatar */}
           <div className="w-full md:w-1/3 bg-muted/30 p-6 md:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-border space-y-6">
-            <Avatar className="w-28 h-28 md:w-40 md:h-40 border-4 border-background shadow-xl">
-              <AvatarFallback className="bg-primary/10 text-primary text-2xl md:text-4xl font-bold">
-                {loading ? <Loader2 className="animate-spin" /> : initials}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+              <Avatar className="w-28 h-28 md:w-40 md:h-40 border-4 border-background shadow-xl">
+                {avatarURL && <AvatarImage src={avatarURL} alt="Foto profil" />}
+                <AvatarFallback className="bg-primary/10 text-primary text-2xl md:text-4xl font-bold">
+                  {loading ? <Loader2 className="animate-spin" /> : initials}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                {uploadingAvatar ? (
+                  <Loader2 size={28} className="text-white animate-spin" />
+                ) : (
+                  <Camera size={28} className="text-white" />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+            </div>
 
             <div className="text-center">
               <h2 className="text-2xl font-bold tracking-tight">

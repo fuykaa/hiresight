@@ -5,16 +5,18 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 )
 
+func isAzureConfigured() bool {
+	return os.Getenv("AZURE_STORAGE_ACCOUNT_NAME") != "" && os.Getenv("AZURE_STORAGE_ACCOUNT_KEY") != ""
+}
+
 func getBlobClient() (*azblob.Client, error) {
 	accountName := os.Getenv("AZURE_STORAGE_ACCOUNT_NAME")
 	accountKey := os.Getenv("AZURE_STORAGE_ACCOUNT_KEY")
-	if accountName == "" || accountKey == "" {
-		return nil, fmt.Errorf("AZURE_STORAGE_ACCOUNT_NAME atau AZURE_STORAGE_ACCOUNT_KEY belum dikonfigurasi")
-	}
 
 	cred, err := azblob.NewSharedKeyCredential(accountName, accountKey)
 	if err != nil {
@@ -31,6 +33,14 @@ func getBlobClient() (*azblob.Client, error) {
 }
 
 func UploadToBlob(containerName, blobName string, data []byte) error {
+	if !isAzureConfigured() {
+		dir := filepath.Join("uploads", containerName)
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			return err
+		}
+		return os.WriteFile(filepath.Join(dir, blobName), data, 0644)
+	}
+
 	client, err := getBlobClient()
 	if err != nil {
 		return err
@@ -40,6 +50,10 @@ func UploadToBlob(containerName, blobName string, data []byte) error {
 }
 
 func DownloadBlobBytes(containerName, blobName string) ([]byte, error) {
+	if !isAzureConfigured() {
+		return os.ReadFile(filepath.Join("uploads", containerName, blobName))
+	}
+
 	client, err := getBlobClient()
 	if err != nil {
 		return nil, err
@@ -55,6 +69,10 @@ func DownloadBlobBytes(containerName, blobName string) ([]byte, error) {
 }
 
 func DeleteBlob(containerName, blobName string) error {
+	if !isAzureConfigured() {
+		return os.Remove(filepath.Join("uploads", containerName, blobName))
+	}
+
 	client, err := getBlobClient()
 	if err != nil {
 		return err
