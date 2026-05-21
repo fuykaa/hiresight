@@ -24,7 +24,7 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 20.198.216.160 >> ~/.ssh/known_hosts
 
@@ -73,12 +73,17 @@ jobs:
           NEXT_PUBLIC_API_URL: http://20.198.216.160
         run: npm run build
 
+      - name: Prune dev dependencies
+        working-directory: hiresight-app
+        run: npm prune --production
+
       - name: Package
         run: |
           mkdir -p frontend-stage
           cp -r hiresight-app/.next frontend-stage/.next
           rm -rf frontend-stage/.next/cache
           cp hiresight-app/package.json frontend-stage/package.json
+          cp -r hiresight-app/node_modules frontend-stage/node_modules
           [ -d hiresight-app/public ] && cp -r hiresight-app/public frontend-stage/public || true
           tar -czf frontend-deploy.tar.gz -C frontend-stage .
           rm -rf frontend-stage
@@ -87,7 +92,7 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 20.198.216.160 >> ~/.ssh/known_hosts
 
@@ -106,7 +111,6 @@ jobs:
           CHUNKS=$(ls ~/hiresight-frontend/.next/static/chunks/ 2>/dev/null | wc -l)
           [ "$CHUNKS" -lt 1 ] && { echo "ERROR: static chunks kosong"; exit 1; }
           cd ~/hiresight-frontend
-          npm install --omit=dev --ignore-scripts --no-fund --no-audit
           sudo tee /etc/nginx/sites-available/hiresight > /dev/null << 'NGINX_EOF'
           server {
               listen 80;
