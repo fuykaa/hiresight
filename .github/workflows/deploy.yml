@@ -26,7 +26,13 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Add VM to known hosts
-        run: ssh-keyscan -H 20.198.216.160 >> ~/.ssh/known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          cat >> ~/.ssh/known_hosts << 'EOF'
+          20.198.216.160 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGdfFZ378Xb7ugKQQrkZAO8j5QIGIJ4FtbxWKfNklZNP
+          20.198.216.160 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDFgD/bvSm0qkjlIscpwyEJ0Pgx9DYH4dGZs/FuToVxII+aX742DqjnOjesurpONOR+ltbxPGio4XdkVxa5JjpEJcn6guhN4+F4STMNASEc4tPKqHlSB+XwSEhipNQB0Id640zF276M5uYVXuuAcM9cQFMEgdMFRRjVxcxBquRtmUl4IpKlIJOp5ZneaZDU1tslWLFq3XABxwdZELQXmf++BD1oWVTaLEtq9FGWrw/vCrrIJ1r8Kcm2OR5kP47KwiajoHSzD6mv8jXyKm8qgl5+j/5WRjV3joz6lf/IjwxrGjWsS5J4FnUPgTBT2octWB1y0SHquiR44mqYti9gbAtrrLda9uQA+vbSf923wN533zQN1x/OhZz3J3flqvNkYq+3/ghQR/BMZ+a1em2obohgakExDUJcO+VyM+Hj/e67ozvLKEutXb3jdBfQfXmsZN1t9q6DodgjxJpAO7w3KiuMoN3C0I+4gzrUI0MOf8/Clyjt6QqZnB8B4FAp9pRZoLs=
+          20.198.216.160 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKJqsh5OASh6U1gT9UKPzESdHulTAa8edzBxPvz5tiwfw1HX8NNtYnAsPRCRP033owmTPixgZ5YX6GtWfCd2V9E=
+          EOF
 
       - name: Upload binary
         run: scp -o ServerAliveInterval=30 backend-hiresight/server azureuser@20.198.216.160:~/server-new
@@ -94,7 +100,13 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Add VM to known hosts
-        run: ssh-keyscan -H 20.198.216.160 >> ~/.ssh/known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          cat >> ~/.ssh/known_hosts << 'EOF'
+          20.198.216.160 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGdfFZ378Xb7ugKQQrkZAO8j5QIGIJ4FtbxWKfNklZNP
+          20.198.216.160 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDFgD/bvSm0qkjlIscpwyEJ0Pgx9DYH4dGZs/FuToVxII+aX742DqjnOjesurpONOR+ltbxPGio4XdkVxa5JjpEJcn6guhN4+F4STMNASEc4tPKqHlSB+XwSEhipNQB0Id640zF276M5uYVXuuAcM9cQFMEgdMFRRjVxcxBquRtmUl4IpKlIJOp5ZneaZDU1tslWLFq3XABxwdZELQXmf++BD1oWVTaLEtq9FGWrw/vCrrIJ1r8Kcm2OR5kP47KwiajoHSzD6mv8jXyKm8qgl5+j/5WRjV3joz6lf/IjwxrGjWsS5J4FnUPgTBT2octWB1y0SHquiR44mqYti9gbAtrrLda9uQA+vbSf923wN533zQN1x/OhZz3J3flqvNkYq+3/ghQR/BMZ+a1em2obohgakExDUJcO+VyM+Hj/e67ozvLKEutXb3jdBfQfXmsZN1t9q6DodgjxJpAO7w3KiuMoN3C0I+4gzrUI0MOf8/Clyjt6QqZnB8B4FAp9pRZoLs=
+          20.198.216.160 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKJqsh5OASh6U1gT9UKPzESdHulTAa8edzBxPvz5tiwfw1HX8NNtYnAsPRCRP033owmTPixgZ5YX6GtWfCd2V9E=
+          EOF
 
       - name: Upload package
         run: scp -o ServerAliveInterval=30 frontend-deploy.tar.gz azureuser@20.198.216.160:~/
