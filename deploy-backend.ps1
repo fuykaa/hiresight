@@ -28,7 +28,7 @@ Ok "Binary terkirim"
 
 # 3. Ganti binary di container dan restart
 Step 3 "Update container di VM..."
-@'
+$bashScript = @'
 set -e
 
 echo "--- Cek container ---"
@@ -54,7 +54,8 @@ echo "Container running: OK"
 echo "--- Logs terakhir ---"
 docker logs hiresight --tail 10
 echo "Backend OK!"
-'@ | ssh -o "ServerAliveInterval=30" -o "ServerAliveCountMax=10" $VM bash
+'@
+($bashScript -replace "`r`n", "`n") | ssh -o "ServerAliveInterval=30" -o "ServerAliveCountMax=10" $VM bash
 if ($LASTEXITCODE -ne 0) { Fail "Update container gagal" }
 
 Write-Host "`n=== Backend berhasil di-deploy! ===" -ForegroundColor Green

@@ -174,6 +174,118 @@ type groqResponse struct {
 	} `json:"choices"`
 }
 
+type TemplateRecommendation struct {
+	Section      string   `json:"section"`
+	Template     string   `json:"template"`
+	Placeholders []string `json:"placeholders"`
+	Tip          string   `json:"tip"`
+}
+
+const templatePrompt = `Kamu adalah career coach profesional yang membantu kandidat memperbaiki CV mereka.
+
+Berikut adalah teks CV kandidat:
+%s
+
+Berikut adalah Job Description posisi yang dilamar:
+%s
+
+Berikut adalah keyword dari JD yang TIDAK ditemukan di CV kandidat (harus ditambahkan):
+%s
+
+Profil kandidat: %s
+
+## TUGAS
+Buat maksimal 5 template bullet point siap copy-paste untuk CV kandidat dengan ketentuan:
+
+1. Ambil konteks pengalaman/keahlian NYATA yang sudah ada di CV kandidat
+2. Rewrite dalam gaya LinkedIn: action verb + konteks + dampak/hasil
+3. Sisipkan keyword yang hilang sebagai placeholder dalam format [NamaKeyword]
+4. Setiap template harus terdengar natural dan relevan dengan pengalaman nyata kandidat
+5. Jangan buat contoh fiktif — gunakan fakta dari CV yang ada
+6. Berlaku untuk semua bidang industri, bukan hanya IT
+
+Untuk kandidat "fresh_graduate": fokus pada proyek, magang, organisasi, dan skills
+Untuk kandidat "experienced": fokus pada pengalaman kerja profesional dan pencapaian
+Untuk kandidat "career_changer": fokus pada transferable skills yang relevan
+
+Balas HANYA dengan JSON array berikut. Tidak ada teks lain, tidak ada markdown:
+[
+  {
+    "section": "experience" | "skills" | "summary",
+    "template": "teks bullet point dengan [Placeholder] untuk keyword yang perlu diisi",
+    "placeholders": ["Keyword1", "Keyword2"],
+    "tip": "panduan singkat cara mengisi placeholder berdasarkan konteks kandidat ini"
+  }
+]`
+
+func GenerateTemplateRecommendations(cvText, jobDescription string, missingKeywords []KeywordItem, candidateProfile string) ([]TemplateRecommendation, error) {
+	apiKey := os.Getenv("GROQ_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("GROQ_API_KEY tidak ditemukan di environment")
+	}
+
+	kwLines := make([]string, 0, len(missingKeywords))
+	for _, kw := range missingKeywords {
+		kwLines = append(kwLines, fmt.Sprintf("- %s (%s)", kw.Keyword, kw.Weight))
+	}
+	kwList := strings.Join(kwLines, "\n")
+
+	prompt := fmt.Sprintf(templatePrompt, cvText, jobDescription, kwList, candidateProfile)
+
+	reqBody := groqRequest{
+		Model:    groqModel,
+		Messages: []groqMessage{{Role: "user", Content: prompt}},
+	}
+
+	bodyBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("gagal marshal request: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", groqEndpoint, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return nil, fmt.Errorf("gagal membuat HTTP request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("gagal kirim request ke Groq: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("Groq API error %d: %s", resp.StatusCode, string(body))
+	}
+
+	var groqResp groqResponse
+	if err := json.NewDecoder(resp.Body).Decode(&groqResp); err != nil {
+		return nil, fmt.Errorf("gagal decode response Groq: %w", err)
+	}
+
+	if len(groqResp.Choices) == 0 {
+		return nil, fmt.Errorf("Groq tidak mengembalikan hasil")
+	}
+
+	rawJSON := strings.TrimSpace(groqResp.Choices[0].Message.Content)
+	if strings.HasPrefix(rawJSON, "```") {
+		if idx := strings.Index(rawJSON, "\n"); idx != -1 {
+			rawJSON = rawJSON[idx+1:]
+		}
+		rawJSON = strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(rawJSON), "```"))
+	}
+
+	var recommendations []TemplateRecommendation
+	if err := json.Unmarshal([]byte(rawJSON), &recommendations); err != nil {
+		return nil, fmt.Errorf("gagal parse JSON dari Groq: %w", err)
+	}
+
+	return recommendations, nil
+}
+
 func AnalyzeWithGroq(cvText, jdText string) (*AIResult, error) {
 	apiKey := os.Getenv("GROQ_API_KEY")
 	if apiKey == "" {

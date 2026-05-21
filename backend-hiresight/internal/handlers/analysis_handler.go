@@ -88,6 +88,83 @@ func (h *AnalysisHandler) GetResult(c *gin.Context) {
 	c.JSON(200, result)
 }
 
+// GET /api/analysis/:resume_id/template
+func (h *AnalysisHandler) GetTemplateRecommendations(c *gin.Context) {
+	resumeID := c.Param("resume_id")
+	userID, _ := c.Get("userID")
+
+	// 1. Pastikan resume milik user yang login
+	resume, err := h.ResumeRepo.FindByIDAndUser(resumeID, userID.(string))
+	if err != nil {
+		c.JSON(403, gin.H{"error": "Akses dilarang"})
+		return
+	}
+
+	// 2. Ambil hasil analisis yang sudah ada
+	analysisResult, err := h.Repo.GetResultWithSecurity(resumeID, userID.(string))
+	if err != nil {
+		c.JSON(404, gin.H{"error": "Hasil analisis belum tersedia"})
+		return
+	}
+	if analysisResult.Status != "completed" {
+		c.JSON(400, gin.H{"error": "Analisis belum selesai"})
+		return
+	}
+
+	// 3. Parse keyword_analysis dan filter yang tidak ditemukan
+	var allKeywords []services.KeywordItem
+	if err := json.Unmarshal(analysisResult.KeywordAnalysis, &allKeywords); err != nil {
+		c.JSON(500, gin.H{"error": "Gagal membaca data keyword"})
+		return
+	}
+
+	var missingKeywords []services.KeywordItem
+	for _, kw := range allKeywords {
+		if !kw.FoundInCV {
+			missingKeywords = append(missingKeywords, kw)
+		}
+	}
+
+	// 4. Jika semua keyword sudah ada di CV
+	if len(missingKeywords) == 0 {
+		c.JSON(200, gin.H{"recommendations": []services.TemplateRecommendation{}, "message": "CV kamu sudah mencakup semua keyword penting!"})
+		return
+	}
+
+	// 5. Download dan ekstrak teks CV
+	resumesContainer := os.Getenv("AZURE_STORAGE_CONTAINER_RESUMES")
+	if resumesContainer == "" {
+		resumesContainer = "resumes"
+	}
+
+	fileBytes, err := services.DownloadBlobBytes(resumesContainer, resume.FilePath)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Gagal mengambil file CV"})
+		return
+	}
+
+	var cvText string
+	switch strings.ToLower(resume.FileType) {
+	case "docx":
+		cvText, err = extractDOCXFromBytes(fileBytes)
+	default:
+		cvText, err = services.ExtractPDFWithFormRecognizer(fileBytes)
+	}
+	if err != nil || len(strings.TrimSpace(cvText)) < 100 {
+		c.JSON(500, gin.H{"error": "Gagal membaca konten CV"})
+		return
+	}
+
+	// 6. Generate rekomendasi template via Groq
+	recommendations, err := services.GenerateTemplateRecommendations(cvText, resume.JobDescription, missingKeywords, analysisResult.CandidateProfile)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Gagal menghasilkan rekomendasi"})
+		return
+	}
+
+	c.JSON(200, gin.H{"recommendations": recommendations})
+}
+
 // runAnalysis dijalankan sebagai goroutine — download dari blob, ekstrak teks, panggil Groq, hitung skor, simpan ke DB
 func (h *AnalysisHandler) runAnalysis(analysis *models.AnalysisResult, blobName, fileType, jobDescription, jobPosition string) {
 	markFailed := func(msg string, err error) {

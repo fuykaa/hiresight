@@ -74,6 +74,7 @@ func main() {
 		authorized.GET("/analysis/stats", analysisHandler.GetStats)
 		authorized.POST("/analysis/:resume_id", analysisHandler.TriggerAnalysis)
 		authorized.GET("/analysis/:resume_id", analysisHandler.GetResult)
+		authorized.GET("/analysis/:resume_id/template", analysisHandler.GetTemplateRecommendations)
 	}
 
 	log.Println("Server berjalan di port 8081...")
