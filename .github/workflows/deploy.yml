@@ -21,14 +21,12 @@ jobs:
         working-directory: backend-hiresight
         run: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o server ./cmd/api/main.go
 
-      - name: Setup SSH
-        env:
-          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 20.198.216.160 >> ~/.ssh/known_hosts
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add VM to known hosts
+        run: ssh-keyscan -H 20.198.216.160 >> ~/.ssh/known_hosts
 
       - name: Upload binary
         run: scp -o ServerAliveInterval=30 backend-hiresight/server azureuser@20.198.216.160:~/server-new
@@ -91,14 +89,12 @@ jobs:
           rm -rf frontend-stage
           echo "Package size: $(du -sh frontend-deploy.tar.gz | cut -f1)"
 
-      - name: Setup SSH
-        env:
-          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 20.198.216.160 >> ~/.ssh/known_hosts
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add VM to known hosts
+        run: ssh-keyscan -H 20.198.216.160 >> ~/.ssh/known_hosts
 
       - name: Upload package
         run: scp -o ServerAliveInterval=30 frontend-deploy.tar.gz azureuser@20.198.216.160:~/
