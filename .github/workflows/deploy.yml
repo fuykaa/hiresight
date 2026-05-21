@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+env:
+  VM: azureuser@20.198.216.160
+
 jobs:
   deploy-backend:
     name: Deploy Backend
@@ -28,18 +31,14 @@ jobs:
       - name: Add VM to known hosts
         run: |
           mkdir -p ~/.ssh
-          cat >> ~/.ssh/known_hosts << 'EOF'
-          20.198.216.160 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGdfFZ378Xb7ugKQQrkZAO8j5QIGIJ4FtbxWKfNklZNP
-          20.198.216.160 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDFgD/bvSm0qkjlIscpwyEJ0Pgx9DYH4dGZs/FuToVxII+aX742DqjnOjesurpONOR+ltbxPGio4XdkVxa5JjpEJcn6guhN4+F4STMNASEc4tPKqHlSB+XwSEhipNQB0Id640zF276M5uYVXuuAcM9cQFMEgdMFRRjVxcxBquRtmUl4IpKlIJOp5ZneaZDU1tslWLFq3XABxwdZELQXmf++BD1oWVTaLEtq9FGWrw/vCrrIJ1r8Kcm2OR5kP47KwiajoHSzD6mv8jXyKm8qgl5+j/5WRjV3joz6lf/IjwxrGjWsS5J4FnUPgTBT2octWB1y0SHquiR44mqYti9gbAtrrLda9uQA+vbSf923wN533zQN1x/OhZz3J3flqvNkYq+3/ghQR/BMZ+a1em2obohgakExDUJcO+VyM+Hj/e67ozvLKEutXb3jdBfQfXmsZN1t9q6DodgjxJpAO7w3KiuMoN3C0I+4gzrUI0MOf8/Clyjt6QqZnB8B4FAp9pRZoLs=
-          20.198.216.160 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKJqsh5OASh6U1gT9UKPzESdHulTAa8edzBxPvz5tiwfw1HX8NNtYnAsPRCRP033owmTPixgZ5YX6GtWfCd2V9E=
-          EOF
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
 
       - name: Upload binary
-        run: scp -o ServerAliveInterval=30 backend-hiresight/server azureuser@20.198.216.160:~/server-new
+        run: scp -o ServerAliveInterval=30 backend-hiresight/server ${{ env.VM }}:~/server-new
 
       - name: Deploy on VM
         run: |
-          ssh -o ServerAliveInterval=30 azureuser@20.198.216.160 'bash -s' << 'DEPLOY_EOF'
+          ssh -o ServerAliveInterval=30 ${{ env.VM }} 'bash -s' << 'DEPLOY_EOF'
           set -e
           CONTAINER_STATUS=$(docker inspect hiresight --format "{{.State.Status}}" 2>/dev/null || echo "missing")
           [ "$CONTAINER_STATUS" = "missing" ] && { echo "ERROR: container hiresight tidak ditemukan"; exit 1; }
@@ -49,10 +48,7 @@ jobs:
           docker start hiresight
           sleep 3
           RUNNING=$(docker inspect hiresight --format "{{.State.Running}}" 2>/dev/null || echo "false")
-          if [ "$RUNNING" != "true" ]; then
-            docker logs hiresight --tail 20
-            exit 1
-          fi
+          [ "$RUNNING" != "true" ] && { docker logs hiresight --tail 20; exit 1; }
           echo "Backend deploy OK"
           docker logs hiresight --tail 10
           DEPLOY_EOF
@@ -60,6 +56,7 @@ jobs:
   deploy-frontend:
     name: Deploy Frontend
     runs-on: ubuntu-latest
+    needs: [deploy-backend]
     steps:
       - uses: actions/checkout@v4
 
@@ -102,21 +99,18 @@ jobs:
       - name: Add VM to known hosts
         run: |
           mkdir -p ~/.ssh
-          cat >> ~/.ssh/known_hosts << 'EOF'
-          20.198.216.160 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGdfFZ378Xb7ugKQQrkZAO8j5QIGIJ4FtbxWKfNklZNP
-          20.198.216.160 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDFgD/bvSm0qkjlIscpwyEJ0Pgx9DYH4dGZs/FuToVxII+aX742DqjnOjesurpONOR+ltbxPGio4XdkVxa5JjpEJcn6guhN4+F4STMNASEc4tPKqHlSB+XwSEhipNQB0Id640zF276M5uYVXuuAcM9cQFMEgdMFRRjVxcxBquRtmUl4IpKlIJOp5ZneaZDU1tslWLFq3XABxwdZELQXmf++BD1oWVTaLEtq9FGWrw/vCrrIJ1r8Kcm2OR5kP47KwiajoHSzD6mv8jXyKm8qgl5+j/5WRjV3joz6lf/IjwxrGjWsS5J4FnUPgTBT2octWB1y0SHquiR44mqYti9gbAtrrLda9uQA+vbSf923wN533zQN1x/OhZz3J3flqvNkYq+3/ghQR/BMZ+a1em2obohgakExDUJcO+VyM+Hj/e67ozvLKEutXb3jdBfQfXmsZN1t9q6DodgjxJpAO7w3KiuMoN3C0I+4gzrUI0MOf8/Clyjt6QqZnB8B4FAp9pRZoLs=
-          20.198.216.160 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKJqsh5OASh6U1gT9UKPzESdHulTAa8edzBxPvz5tiwfw1HX8NNtYnAsPRCRP033owmTPixgZ5YX6GtWfCd2V9E=
-          EOF
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
 
       - name: Upload package
-        run: scp -o ServerAliveInterval=30 frontend-deploy.tar.gz azureuser@20.198.216.160:~/
+        run: scp -o ServerAliveInterval=30 frontend-deploy.tar.gz ${{ env.VM }}:~/
 
       - name: Deploy on VM
         run: |
-          ssh -o ServerAliveInterval=30 azureuser@20.198.216.160 'bash -s' << 'DEPLOY_EOF'
+          ssh -o ServerAliveInterval=30 ${{ env.VM }} 'bash -s' << 'DEPLOY_EOF'
           set -e
-          fuser -k 3000/tcp 2>/dev/null || true
-          sleep 1
+          command -v pm2 || npm install -g pm2
+          pm2 stop hiresight-frontend 2>/dev/null || true
+          pm2 delete hiresight-frontend 2>/dev/null || true
           rm -rf ~/hiresight-frontend
           mkdir -p ~/hiresight-frontend
           tar -xzf ~/frontend-deploy.tar.gz -C ~/hiresight-frontend
@@ -180,13 +174,10 @@ jobs:
           }
           NGINX_EOF
           sudo nginx -t && sudo systemctl reload nginx
-          PORT=3000 HOSTNAME=127.0.0.1 nohup ./node_modules/.bin/next start > ~/frontend.log 2>&1 &
-          sleep 10
-          NODE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000 || echo "000")
-          if [ "$NODE_STATUS" != "200" ]; then
-            echo "ERROR: Node.js tidak merespons"
-            tail -30 ~/frontend.log
-            exit 1
-          fi
+          PORT=3000 HOSTNAME=127.0.0.1 pm2 start ./node_modules/.bin/next --name hiresight-frontend -- start
+          pm2 save
+          sleep 5
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000 || echo "000")
+          [ "$HTTP_STATUS" != "200" ] && { echo "ERROR: frontend tidak merespons (HTTP $HTTP_STATUS)"; pm2 logs hiresight-frontend --lines 30 --nostream; exit 1; }
           echo "Frontend deploy OK"
           DEPLOY_EOF
