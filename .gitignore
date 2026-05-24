@@ -9,3 +9,7 @@ uploads/
 node_modules/
 backend-hiresight/server
 *.tar.gz
+hiresight-app/.next/
+
+# Design system extraction — local only, tidak perlu di-push
+docs/design-extracted/
