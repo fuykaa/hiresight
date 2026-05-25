@@ -81,7 +81,7 @@ export default function ResumePage() {
   const totalPages       = Math.ceil(filteredResumes.length / itemsPerPage) || 1;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 md:p-12 md:pt-32">
+    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 pt-24 md:p-12 md:pt-32">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold uppercase tracking-widest text-primary">
@@ -156,7 +156,33 @@ export default function ResumePage() {
                 resumes
               </p>
 
-              <div className="flex gap-2">
+              {/* Mobile: prev / Page X/Y / next */}
+              <div className="flex md:hidden items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-lg"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft size={18} />
+                </Button>
+                <span className="text-sm font-bold px-2 text-foreground/70">
+                  {currentPage} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-lg"
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight size={18} />
+                </Button>
+              </div>
+
+              {/* Desktop: individual page buttons */}
+              <div className="hidden md:flex gap-2">
                 <Button
                   variant="outline"
                   size="icon"

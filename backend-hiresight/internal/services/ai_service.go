@@ -55,8 +55,7 @@ Cek apakah setiap keyword ditemukan secara eksplisit di CV. Kenali padanan resmi
 
 Jangan tandai found=true jika hanya ada konsep umum yang tidak spesifik.
 Catat di section mana keyword itu ditemukan: "skills", "experience", "education", "summary", atau null.
-Hitung berapa kali keyword (atau padanan resminya) muncul di SELURUH CV — di semua section. Kembalikan di field "occurrence_count".
-Jika found_in_cv=false, occurrence_count=0. Jika found=true tapi hanya 1 kali, occurrence_count=1.
+Selalu kembalikan "occurrence_count": 0 — sistem akan menghitung ini secara terpisah.
 
 ## TUGAS 3 — Tentukan candidate_profile
 
@@ -64,7 +63,8 @@ Gunakan kriteria ketat berikut:
 
 "experienced":
 - Ada pengalaman kerja PROFESIONAL (full-time, part-time, atau kontrak, BUKAN magang/PKL)
-- Durasi ≥ 1 tahun total, relevan dengan bidang JD
+- Durasi ≥ 1 tahun total (JUMLAHKAN semua entry termasuk yang pendek), relevan dengan bidang JD
+- Contoh: 6 posisi masing-masing 2 bulan = 12 bulan = 1 tahun → "experienced"
 - Contoh: Software Engineer 2 tahun di perusahaan, Backend Developer freelance 1.5 tahun
 
 "fresh_graduate":
@@ -118,8 +118,12 @@ Kembalikan angka integer dari frasa tersebut. Jika tidak ada persyaratan eksplis
 Contoh: "minimal 2 tahun pengalaman" → 2; "5+ years of experience" → 5; tidak ada persyaratan → 0
 
 TUGAS 6B — years_of_experience (dari CV):
-Hitung total tahun pengalaman kerja PROFESIONAL dari CV (full-time, part-time, kontrak — BUKAN magang/PKL, organisasi kampus).
-Gabungkan semua periode kerja profesional, estimasi boleh jika tanggal tidak lengkap.
+Hitung total bulan dari SEMUA pengalaman kerja profesional (full-time, part-time, kontrak — BUKAN magang/PKL, organisasi kampus), lalu bagi 12.
+WAJIB jumlahkan SEMUA entri termasuk yang durasinya sangat pendek (1–3 bulan).
+Jangan hanya ambil yang terpanjang atau terbaru — semua entri dihitung.
+Contoh: 6 posisi × 2 bulan = 12 bulan = 1.0 tahun → kembalikan 1.0
+Contoh: posisi A (3 bln) + B (4 bln) + C (6 bln) = 13 bulan = 1.1 tahun → kembalikan 1.1
+Estimasi boleh jika tanggal tidak lengkap.
 Jika tidak ada pengalaman profesional → kembalikan 0.
 Kembalikan angka float dengan satu desimal (contoh: 1.5, 3.0, 0.5).
 
@@ -168,6 +172,119 @@ type groqResponse struct {
 			Content string `json:"content"`
 		} `json:"message"`
 	} `json:"choices"`
+}
+
+type TemplateRecommendation struct {
+	Section      string   `json:"section"`
+	Template     string   `json:"template"`
+	Placeholders []string `json:"placeholders"`
+	Tip          string   `json:"tip"`
+}
+
+const templatePrompt = `Kamu adalah career coach profesional yang membantu kandidat memperbaiki CV mereka.
+
+Berikut adalah teks CV kandidat:
+%s
+
+Berikut adalah Job Description posisi yang dilamar:
+%s
+
+Berikut adalah keyword dari JD yang TIDAK ditemukan di CV kandidat (harus ditambahkan):
+%s
+
+Profil kandidat: %s
+
+## TUGAS
+Buat maksimal 5 template bullet point siap copy-paste untuk CV kandidat dengan ketentuan:
+
+1. Ambil konteks pengalaman/keahlian NYATA yang sudah ada di CV kandidat
+2. Rewrite dalam gaya LinkedIn: action verb + konteks + dampak/hasil kuantitatif
+3. Sisipkan keyword yang hilang sebagai placeholder dalam format [NamaKeyword]
+4. Tambahkan MINIMAL SATU placeholder kuantitas per bullet yang mencerminkan dampak nyata — sesuaikan dengan bidang kandidat, contoh: [JumlahPeserta], [PersentasePeningkatan], [JumlahUnit], [DurasiProyek], [JumlahFollower], [NilaiProyek], [JumlahKlien] — jangan hardcode angka, biarkan kandidat mengisi sendiri
+5. Setiap template harus terdengar natural dan relevan dengan pengalaman nyata kandidat
+6. Jangan buat contoh fiktif — gunakan fakta dari CV yang ada
+7. Berlaku untuk semua bidang industri, bukan hanya IT
+
+Untuk kandidat "fresh_graduate": fokus pada proyek, magang, organisasi, dan skills
+Untuk kandidat "experienced": fokus pada pengalaman kerja profesional dan pencapaian
+Untuk kandidat "career_changer": fokus pada transferable skills yang relevan
+
+Balas HANYA dengan JSON array berikut. Tidak ada teks lain, tidak ada markdown:
+[
+  {
+    "section": "experience" | "skills" | "summary",
+    "template": "teks bullet point dengan [Placeholder] untuk keyword dan [JumlahXxx] untuk kuantitas",
+    "placeholders": ["Keyword1", "JumlahXxx"],
+    "tip": "panduan singkat cara mengisi placeholder dan perkiraan angka yang wajar untuk bidang kandidat ini"
+  }
+]`
+
+func GenerateTemplateRecommendations(cvText, jobDescription string, missingKeywords []KeywordItem, candidateProfile string) ([]TemplateRecommendation, error) {
+	apiKey := os.Getenv("GROQ_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("GROQ_API_KEY tidak ditemukan di environment")
+	}
+
+	kwLines := make([]string, 0, len(missingKeywords))
+	for _, kw := range missingKeywords {
+		kwLines = append(kwLines, fmt.Sprintf("- %s (%s)", kw.Keyword, kw.Weight))
+	}
+	kwList := strings.Join(kwLines, "\n")
+
+	prompt := fmt.Sprintf(templatePrompt, cvText, jobDescription, kwList, candidateProfile)
+
+	reqBody := groqRequest{
+		Model:    groqModel,
+		Messages: []groqMessage{{Role: "user", Content: prompt}},
+	}
+
+	bodyBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("gagal marshal request: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", groqEndpoint, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return nil, fmt.Errorf("gagal membuat HTTP request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("gagal kirim request ke Groq: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("Groq API error %d: %s", resp.StatusCode, string(body))
+	}
+
+	var groqResp groqResponse
+	if err := json.NewDecoder(resp.Body).Decode(&groqResp); err != nil {
+		return nil, fmt.Errorf("gagal decode response Groq: %w", err)
+	}
+
+	if len(groqResp.Choices) == 0 {
+		return nil, fmt.Errorf("Groq tidak mengembalikan hasil")
+	}
+
+	rawJSON := strings.TrimSpace(groqResp.Choices[0].Message.Content)
+	if strings.HasPrefix(rawJSON, "```") {
+		if idx := strings.Index(rawJSON, "\n"); idx != -1 {
+			rawJSON = rawJSON[idx+1:]
+		}
+		rawJSON = strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(rawJSON), "```"))
+	}
+
+	var recommendations []TemplateRecommendation
+	if err := json.Unmarshal([]byte(rawJSON), &recommendations); err != nil {
+		return nil, fmt.Errorf("gagal parse JSON dari Groq: %w", err)
+	}
+
+	return recommendations, nil
 }
 
 func AnalyzeWithGroq(cvText, jdText string) (*AIResult, error) {
@@ -229,6 +346,12 @@ func AnalyzeWithGroq(cvText, jdText string) (*AIResult, error) {
 	var result AIResult
 	if err := json.Unmarshal([]byte(rawJSON), &result); err != nil {
 		return nil, fmt.Errorf("gagal parse JSON dari Groq: %w", err)
+	}
+
+	lowerCV := strings.ToLower(cvText)
+	for i, kw := range result.Keywords {
+		result.Keywords[i].OccurrenceCount = strings.Count(lowerCV, strings.ToLower(kw.Keyword))
+		result.Keywords[i].FoundInCV = result.Keywords[i].OccurrenceCount > 0
 	}
 
 	return &result, nil

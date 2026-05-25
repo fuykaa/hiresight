@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Github, Twitter, Instagram, Mail } from "lucide-react";
+import { Github, Presentation, Instagram, Mail } from "lucide-react";
 import logo from "@/assets/logo.svg";
 import logoDark from "@/assets/logo-dark.svg";
 
@@ -86,11 +86,13 @@ export default function Footer() {
                 <Github size={20} />
               </Link>
               <Link
-                href="https://twitter.com"
+                href="/deck/pitch-deck.html"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-3 bg-base-200 rounded-xl hover:bg-primary hover:text-primary-content transition-all active:scale-95"
-                aria-label="Twitter"
+                aria-label="Pitch Deck"
               >
-                <Twitter size={20} />
+                <Presentation size={20} />
               </Link>
               <Link
                 href="https://instagram.com"

@@ -55,7 +55,7 @@ const HowItWorks = () => {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="bg-neutral text-neutral-content rounded-[3rem] p-12 md:p-20 relative overflow-hidden shadow-2xl"
+          className="bg-neutral text-neutral-content rounded-2xl md:rounded-[3rem] p-6 sm:p-12 md:p-20 relative overflow-hidden shadow-2xl"
         >
           {/* Efek Cahaya Dekoratif di Background */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32"></div>

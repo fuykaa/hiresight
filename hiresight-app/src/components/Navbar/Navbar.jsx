@@ -43,6 +43,7 @@ export default function Navbar() {
 
   const [isDark, setIsDark] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(null); // null = belum tahu
+  const [avatarURL, setAvatarURL] = useState(null);
 
   const handleLogout = async () => {
     try {
@@ -57,8 +58,12 @@ export default function Navbar() {
     setIsDark(root.classList.contains("dark"));
 
     api.get("/api/profile")
-      .then(() => setIsLoggedIn(true))
-      .catch(() => setIsLoggedIn(false));
+      .then(() => {
+        setIsLoggedIn(true);
+        return api.get("/api/profile/avatar", { responseType: "blob" });
+      })
+      .then((res) => setAvatarURL(URL.createObjectURL(res.data)))
+      .catch(() => setIsLoggedIn((prev) => (prev === null ? false : prev)));
   }, []);
 
   const toggleTheme = (theme) => {
@@ -219,6 +224,7 @@ export default function Navbar() {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-base-content/5 transition-all outline-none group flex-shrink-0">
                 <Avatar className="w-8 h-8 border border-primary/20 group-hover:border-primary transition-colors">
+                  {avatarURL && <AvatarImage src={avatarURL} alt="Avatar" />}
                   <AvatarFallback>
                     <User className="w-4 h-4" />
                   </AvatarFallback>

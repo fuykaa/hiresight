@@ -20,6 +20,9 @@ func main() {
 	if err := os.MkdirAll("uploads/resumes", os.ModePerm); err != nil {
 		log.Fatal("Gagal membuat folder uploads:", err)
 	}
+	if err := os.MkdirAll("uploads/avatars", os.ModePerm); err != nil {
+		log.Fatal("Gagal membuat folder uploads/avatars:", err)
+	}
 
 	// 2. Load Config & Koneksi Database
 	cfg := config.LoadConfig()
@@ -71,6 +74,7 @@ func main() {
 		authorized.GET("/analysis/stats", analysisHandler.GetStats)
 		authorized.POST("/analysis/:resume_id", analysisHandler.TriggerAnalysis)
 		authorized.GET("/analysis/:resume_id", analysisHandler.GetResult)
+		authorized.GET("/analysis/:resume_id/template", analysisHandler.GetTemplateRecommendations)
 	}
 
 	log.Println("Server berjalan di port 8081...")

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  LayoutDashboard,
   Download,
   Upload,
   CheckCircle2,
@@ -12,6 +13,9 @@ import {
   AlertCircle,
   Eye,
   Loader2,
+  Sparkles,
+  Copy,
+  Check,
 } from "lucide-react";
 
 import { Progress } from "@/components/ui/progress";
@@ -63,6 +67,10 @@ export default function AnalyzeResult() {
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [templates, setTemplates] = useState(null);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+  const [templateError, setTemplateError] = useState("");
+  const [copiedIndex, setCopiedIndex] = useState(null);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light";
@@ -94,6 +102,55 @@ export default function AnalyzeResult() {
 
     fetchData();
   }, [router]);
+
+  const resumeId = typeof window !== "undefined" ? sessionStorage.getItem("resume_id") : null;
+
+  const handleGetTemplates = async () => {
+    setLoadingTemplates(true);
+    setTemplateError("");
+    try {
+      const res = await api.get(`/api/analysis/${resumeId}/template`);
+      setTemplates(res.data.recommendations);
+    } catch {
+      setTemplateError("Gagal menghasilkan rekomendasi. Coba lagi.");
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
+
+  const handleCopy = (text, index) => {
+    const doSuccess = () => {
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(doSuccess).catch(() => fallbackCopy(text, doSuccess));
+    } else {
+      fallbackCopy(text, doSuccess);
+    }
+  };
+
+  const fallbackCopy = (text, onSuccess) => {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand("copy"); onSuccess(); } catch {}
+    document.body.removeChild(ta);
+  };
+
+  const renderTemplateText = (text) =>
+    text.split(/(\[[^\]]+\])/g).map((part, i) =>
+      /^\[.+\]$/.test(part) ? (
+        <span key={i} className="inline-flex items-center px-1.5 py-0.5 mx-0.5 rounded bg-primary/15 text-primary font-bold text-xs border border-primary/30">
+          {part}
+        </span>
+      ) : (
+        <span key={i}>{part}</span>
+      )
+    );
 
   // State: loading
   if (loading) {
@@ -144,7 +201,7 @@ export default function AnalyzeResult() {
     : "-";
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 md:p-12 md:pt-32">
+    <div className="min-h-screen bg-background text-foreground font-montserrat p-6 pt-24 md:p-12 md:pt-32">
       <div className="max-w-4xl mx-auto space-y-10">
         {/* --- HEADER --- */}
         <header className="flex items-center justify-between border-b border-border pb-6">
@@ -162,6 +219,14 @@ export default function AnalyzeResult() {
           <h1 className="text-xl font-bold uppercase tracking-widest text-primary">
             Analyze Result
           </h1>
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/dashboard")}
+            className="flex items-center gap-2 text-muted-foreground hover:text-primary font-bold p-0 hover:bg-transparent"
+          >
+            <LayoutDashboard size={20} />
+            <span className="hidden sm:inline">Dashboard</span>
+          </Button>
         </header>
 
         {/* --- SECTION: DOCUMENT INFORMATION --- */}
@@ -176,7 +241,7 @@ export default function AnalyzeResult() {
                   <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">
                     Filename
                   </p>
-                  <p className="font-bold truncate max-w-[200px] text-sm">
+                  <p className="font-bold truncate max-w-[150px] sm:max-w-xs text-sm">
                     {resume?.file_name ?? "-"}
                   </p>
                 </div>
@@ -241,7 +306,7 @@ export default function AnalyzeResult() {
                 key={index}
                 className="bg-card border-border group hover:border-primary/50 transition-colors shadow-sm"
               >
-                <CardContent className="p-8 text-center space-y-2">
+                <CardContent className="p-4 md:p-8 text-center space-y-2">
                   <p className={`text-4xl font-black tracking-tighter ${getScoreColor(score.value)}`}>
                     {score.value}
                     <span className="text-lg text-muted-foreground">%</span>
@@ -334,6 +399,100 @@ export default function AnalyzeResult() {
                   </p>
                 )}
               </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* --- SECTION: REKOMENDASI TEMPLATE CV --- */}
+        <section className="space-y-4">
+          <h2 className="font-bold text-sm uppercase tracking-wider flex items-center gap-2">
+            <Sparkles size={18} /> Rekomendasi Template CV
+          </h2>
+          <Card className="bg-card border-border shadow-sm">
+            <CardContent className="p-6 space-y-6">
+              {templates === null && (
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="font-bold text-sm">Template LinkedIn Siap Pakai</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed max-w-md">
+                      Dapatkan bullet point pengalaman yang sudah di-LinkedIn-kan berdasarkan CV kamu, lengkap dengan placeholder keyword yang perlu ditambahkan.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleGetTemplates}
+                    disabled={loadingTemplates || missingKeywords.length === 0}
+                    className="gap-2 rounded-xl font-bold shadow-lg shadow-primary/20 shrink-0"
+                  >
+                    {loadingTemplates ? (
+                      <><Loader2 size={16} className="animate-spin" /> Memproses...</>
+                    ) : (
+                      <><Sparkles size={16} /> Dapatkan Template</>
+                    )}
+                  </Button>
+                  {missingKeywords.length === 0 && (
+                    <p className="text-xs text-muted-foreground italic">CV kamu sudah mencakup semua keyword!</p>
+                  )}
+                </div>
+              )}
+
+              {templateError && (
+                <p className="text-sm text-destructive font-medium flex items-center gap-2">
+                  <AlertCircle size={14} /> {templateError}
+                  <button onClick={handleGetTemplates} className="underline ml-1">Coba lagi</button>
+                </p>
+              )}
+
+              {templates !== null && templates.length === 0 && (
+                <div className="text-center py-4 space-y-2">
+                  <CheckCircle2 size={32} className="text-success mx-auto" />
+                  <p className="font-bold text-sm">CV kamu sudah mencakup semua keyword penting!</p>
+                </div>
+              )}
+
+              {templates !== null && templates.length > 0 && (
+                <div className="space-y-4">
+                  <p className="text-xs text-muted-foreground">
+                    {templates.length} template ditemukan. Klik <span className="font-bold">Salin</span> lalu tempel ke CV kamu, kemudian ganti placeholder <span className="text-primary font-bold">[...]</span> dengan detail spesifik pengalamanmu.
+                  </p>
+                  {templates.map((tmpl, i) => (
+                    <div key={i} className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="outline" className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5">
+                          {tmpl.section}
+                        </Badge>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1.5 rounded-lg font-bold h-7 text-xs"
+                          onClick={() => handleCopy(tmpl.template, i)}
+                        >
+                          {copiedIndex === i ? (
+                            <><Check size={12} className="text-success" /> Tersalin</>
+                          ) : (
+                            <><Copy size={12} /> Salin</>
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-sm leading-relaxed">
+                        {renderTemplateText(tmpl.template)}
+                      </p>
+                      {tmpl.tip && (
+                        <p className="text-xs text-muted-foreground border-t border-border/50 pt-2">
+                          💡 {tmpl.tip}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-muted-foreground gap-1.5"
+                    onClick={() => { setTemplates(null); handleGetTemplates(); }}
+                  >
+                    <Sparkles size={12} /> Generate ulang
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </section>
