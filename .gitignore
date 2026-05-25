@@ -8,7 +8,9 @@ uploads/
 # Build artifacts & binaries
 node_modules/
 backend-hiresight/server
+backend-hiresight/coverage
 *.tar.gz
+*.out
 hiresight-app/.next/
 
 # Design system extraction — local only, tidak perlu di-push
