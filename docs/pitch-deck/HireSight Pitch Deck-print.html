@@ -1,0 +1,1059 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<title>HireSight — Pitch Deck</title>
+<link rel="stylesheet" href="tokens.css" />
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="deck-stage.js"></script>
+<style>
+  /* ─── Stage / slide chrome ─────────────────────────────────────────── */
+  html, body { margin: 0; background: #0b0d12; }
+  deck-stage { --slide-w: 1920px; --slide-h: 1080px; }
+  section.slide {
+    width: 1920px; height: 1080px;
+    background: var(--b1); color: var(--bc);
+    font-family: var(--font-sans);
+    position: relative; overflow: hidden;
+    padding: 80px 112px;
+    box-sizing: border-box;
+    display: flex; flex-direction: column;
+  }
+  /* Persistent chrome */
+  .chrome-tl, .chrome-tr, .chrome-br {
+    position: absolute; z-index: 5;
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--n);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .chrome-tl { top: 48px; left: 112px; }
+  .chrome-tr { top: 48px; right: 112px; }
+  .chrome-br { bottom: 48px; right: 112px; }
+  .chrome-tl img { width: 22px; height: 22px; }
+  .chrome-page { font-family: var(--font-mono); font-weight: 600; color: var(--bc); }
+
+  /* Section ID strip (bottom-left) */
+  .chrome-bl {
+    position: absolute; bottom: 48px; left: 112px; z-index: 5;
+    display: flex; align-items: center; gap: 14px;
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--n);
+  }
+  .chrome-bl .bar { width: 28px; height: 2px; background: var(--p); border-radius: 2px; }
+
+  /* Eyebrow + section header conventions */
+  .eyebrow-row { display: flex; align-items: center; gap: 14px; }
+  .eyebrow-row .bar { width: 40px; height: 2px; background: var(--p); border-radius: 2px; }
+  .eyebrow {
+    font-size: 13px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--n);
+  }
+  .deco-bar {
+    width: 80px; height: 3px; background: var(--p);
+    border-radius: 2px; margin-top: 8px;
+  }
+
+  /* Typography overrides for slide scale */
+  .slide h1.display {
+    font-size: 112px; line-height: 0.98;
+    letter-spacing: -0.035em; font-weight: 800;
+    margin: 0;
+  }
+  .slide h1 {
+    font-size: 80px; line-height: 1.0;
+    letter-spacing: -0.03em; font-weight: 800;
+    margin: 0;
+  }
+  .slide h2 {
+    font-size: 60px; line-height: 1.05;
+    letter-spacing: -0.025em; font-weight: 800;
+    margin: 0;
+  }
+  .slide h3 {
+    font-size: 30px; line-height: 1.2;
+    font-weight: 700; margin: 0;
+  }
+  .slide p, .slide li {
+    font-size: 22px; line-height: 1.55;
+    color: var(--bc);
+  }
+  .slide .lede {
+    font-size: 28px; line-height: 1.5;
+    color: var(--n); max-width: 1100px; font-weight: 500;
+  }
+  .text-gradient {
+    background: linear-gradient(90deg, var(--p), var(--a));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  .mono { font-family: var(--font-mono); }
+
+  /* Decorative blur blobs (signature) */
+  .blob { position: absolute; border-radius: 999px; filter: blur(120px); pointer-events: none; z-index: 0; }
+  .blob.pri { background: color-mix(in srgb, var(--p) 35%, transparent); }
+  .blob.acc { background: color-mix(in srgb, var(--a) 45%, transparent); }
+  .blob.sec { background: color-mix(in srgb, var(--s) 35%, transparent); }
+  .slide > *:not(.blob):not(.chrome-tl):not(.chrome-tr):not(.chrome-br):not(.chrome-bl) { position: relative; z-index: 1; }
+
+  /* Cards */
+  .card {
+    background: var(--b1);
+    border: 1px solid var(--b3);
+    border-radius: 20px;
+    box-shadow: var(--shadow-sm);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card .dot {
+    position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: color-mix(in srgb, var(--p) 10%, transparent);
+    filter: blur(40px);
+    border-radius: 999px;
+  }
+  .card.muted { background: var(--b2); }
+
+  /* Icon bubble */
+  .bubble {
+    width: 64px; height: 64px;
+    border-radius: 20px;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .bubble.pri { background: color-mix(in srgb, var(--p) 12%, transparent); color: var(--p); }
+  .bubble.sec { background: color-mix(in srgb, var(--s) 14%, transparent); color: var(--s); }
+  .bubble.acc { background: color-mix(in srgb, var(--a) 18%, transparent); color: color-mix(in srgb, var(--a) 70%, var(--bc)); }
+  .bubble.su  { background: color-mix(in srgb, var(--su) 18%, transparent); color: color-mix(in srgb, var(--su) 60%, var(--bc)); }
+  .bubble.er  { background: color-mix(in srgb, var(--er) 14%, transparent); color: var(--er); }
+  .bubble.wa  { background: color-mix(in srgb, var(--wa) 25%, transparent); color: color-mix(in srgb, var(--wa) 55%, var(--bc)); }
+  .bubble.lg { width: 88px; height: 88px; border-radius: 24px; }
+
+  /* Badges / pills */
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 13px; font-weight: 700;
+    border: 1px solid color-mix(in srgb, var(--p) 40%, transparent);
+    color: var(--p);
+    background: color-mix(in srgb, var(--p) 6%, transparent);
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+    background: var(--b2); color: var(--bc);
+    border: 1px solid var(--b3);
+  }
+  .pill.req { color: var(--er); border-color: color-mix(in srgb, var(--er) 35%, transparent); background: color-mix(in srgb, var(--er) 8%, transparent); }
+  .pill.pref{ color: var(--p);  border-color: color-mix(in srgb, var(--p) 35%, transparent);  background: color-mix(in srgb, var(--p) 6%, transparent); }
+  .pill.found{ color: color-mix(in srgb, var(--su) 50%, var(--bc)); border-color: color-mix(in srgb, var(--su) 50%, transparent); background: color-mix(in srgb, var(--su) 12%, transparent); }
+  .pill.miss { color: var(--er); border-color: color-mix(in srgb, var(--er) 35%, transparent); background: color-mix(in srgb, var(--er) 8%, transparent); }
+
+  /* Buttons (decorative — non-interactive on slides) */
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 28px; border-radius: 18px;
+    background: var(--p); color: var(--pc);
+    font-size: 16px; font-weight: 700;
+    box-shadow: 0 14px 24px -8px color-mix(in srgb, var(--p) 40%, transparent);
+    border: none;
+  }
+
+  /* Score ring */
+  .ring-wrap {
+    position: relative; width: 200px; height: 200px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-track { fill: none; stroke: var(--b2); stroke-width: 14; }
+  .ring-prog  { fill: none; stroke: var(--p); stroke-width: 14; stroke-linecap: round; }
+  .ring-prog.su { stroke: color-mix(in srgb, var(--su) 60%, var(--bc)); }
+  .ring-prog.wa { stroke: color-mix(in srgb, var(--wa) 50%, var(--bc)); }
+  .ring-num {
+    position: absolute; text-align: center;
+  }
+  .ring-num .n { font-family: var(--font-mono); font-size: 56px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--bc); }
+  .ring-num .d { font-size: 11px; font-weight: 800; letter-spacing: 0.2em; color: var(--n); text-transform: uppercase; margin-top: 6px; }
+
+  /* Tables */
+  .vs {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    font-size: 18px;
+  }
+  .vs th, .vs td { padding: 18px 22px; text-align: left; border-bottom: 1px solid var(--b3); }
+  .vs th { font-size: 11px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--n); background: var(--b2); }
+  .vs td.first { font-weight: 700; }
+  .vs .yes { color: color-mix(in srgb, var(--su) 50%, var(--bc)); font-weight: 800; }
+  .vs .no  { color: var(--n); }
+
+  /* Mock browser frame for product preview */
+  .browser {
+    background: var(--b1);
+    border: 1px solid var(--b3);
+    border-radius: 16px;
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+  }
+  .browser .tab {
+    background: var(--b2);
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--b3);
+  }
+  .browser .dot3 { width: 10px; height: 10px; border-radius: 999px; }
+  .browser .url {
+    margin-left: 12px; padding: 4px 14px; border-radius: 999px;
+    background: var(--b1); border: 1px solid var(--b3);
+    font-family: var(--font-mono); font-size: 12px; color: var(--n);
+  }
+  .browser .body { padding: 24px; }
+
+  /* Utility */
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .row { display: flex; }
+  .col { display: flex; flex-direction: column; }
+  .gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; }
+  .gap-6 { gap: 24px; } .gap-8 { gap: 32px; } .gap-10 { gap: 40px; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .wrap { flex-wrap: wrap; }
+  .grow { flex: 1; }
+  .muted { color: var(--n); }
+  .strike { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--er) 60%, transparent); text-decoration-thickness: 2px; }
+
+  /* Slide-specific section colorings */
+  .slide.dark {
+    background: #1f2430;
+    color: #ECEFF4;
+  }
+  .slide.dark .muted { color: #8b95a9; }
+  .slide.dark .card { background: #262c3a; border-color: #2f3646; }
+  .slide.dark .card.muted { background: #1a1f2a; }
+  .slide.dark .chrome-tl, .slide.dark .chrome-tr, .slide.dark .chrome-br, .slide.dark .chrome-bl { color: #8b95a9; }
+  .slide.dark .chrome-page { color: #ECEFF4; }
+  .slide.dark .pill { background: #1a1f2a; color: #ECEFF4; border-color: #2f3646; }
+  .slide.dark .vs th { background: #1a1f2a; color: #8b95a9; }
+  .slide.dark .vs th, .slide.dark .vs td { border-color: #2f3646; }
+  .slide.dark .browser { background: #262c3a; border-color: #2f3646; }
+  .slide.dark .browser .tab { background: #1a1f2a; border-color: #2f3646; }
+  .slide.dark .browser .url { background: #262c3a; border-color: #2f3646; }
+  .slide.dark .bubble.pri { background: rgba(94,129,172,0.18); }
+  .slide.dark .ring-track { stroke: #2f3646; }
+</style>
+</head>
+<body>
+
+<deck-stage>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     01 — COVER
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="01 Cover">
+  <div class="blob pri" style="width:520px;height:520px;top:-120px;left:-120px;"></div>
+  <div class="blob acc" style="width:520px;height:520px;bottom:-160px;right:-100px;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">Pitch Deck · Kelompok 15 · 2026</div>
+
+  <div class="col grow" style="justify-content:center; max-width: 1400px;">
+    <div class="eyebrow-row" style="margin-bottom: 28px;">
+      <span class="bar"></span>
+      <span class="eyebrow">AI-Powered ATS Resume Analyzer</span>
+    </div>
+    <h1 class="display">
+      Smarter CV,<br />
+      <span class="text-gradient">Stronger Career.</span>
+    </h1>
+    <p class="lede" style="margin-top: 36px; max-width: 1100px;">
+      HireSight membantu job seeker Indonesia mengukur kesesuaian CV dengan
+      job description, lengkap dengan match score, keyword gap analysis,
+      dan rekomendasi perbaikan yang dipersonalisasi.
+    </p>
+
+    <div class="row gap-3" style="margin-top: 48px;">
+      <span class="badge"><i data-lucide="sparkles" style="width:16px;height:16px;"></i> Senior Project · Web App</span>
+      <span class="pill"><i data-lucide="globe" style="width:14px;height:14px;"></i> Bilingual ID ↔ EN</span>
+      <span class="pill"><i data-lucide="zap" style="width:14px;height:14px;"></i> Llama 3.3 70B via Groq</span>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 01 / 12 · Cover</div>
+  <div class="chrome-br"><span class="chrome-page">hiresight.id</span></div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     02 — THE PROBLEM
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="02 Problem">
+  <div class="blob pri" style="width:440px;height:440px;top:-100px;right:-80px;opacity:.6;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">02 / 12</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 24px;">
+    <span class="bar"></span>
+    <span class="eyebrow">The Problem</span>
+  </div>
+  <h1 style="max-width: 1500px;">CV yang bagus belum tentu <span class="text-gradient">lolos ATS</span>.</h1>
+  <p class="lede" style="margin-top: 24px; max-width: 1200px;">
+    Hampir semua perusahaan memakai Applicant Tracking System untuk menyaring
+    ratusan lamaran. Tanpa keyword yang tepat dan format yang mesin-friendly,
+    CV kamu ditolak sebelum recruiter sempat membacanya.
+  </p>
+
+  <div class="grid-4" style="margin-top: 72px;">
+    <div class="card">
+      <div class="dot"></div>
+      <div class="bubble er" style="margin-bottom: 20px;"><i data-lucide="user-x" style="width:30px;height:30px;"></i></div>
+      <div class="mono" style="font-size: 64px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--er);">75<span style="font-size:36px;">%</span></div>
+      <h3 style="margin-top: 14px;">CV ditolak otomatis</h3>
+      <p class="muted" style="margin-top: 8px;">Sebelum sampai ke recruiter, ATS sudah menyaring berdasarkan keyword + format.</p>
+    </div>
+    <div class="card">
+      <div class="dot"></div>
+      <div class="bubble wa" style="margin-bottom: 20px;"><i data-lucide="clock-alert" style="width:30px;height:30px;"></i></div>
+      <div class="mono" style="font-size: 64px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: color-mix(in srgb, var(--wa) 55%, var(--bc));">6<span style="font-size:36px;">s</span></div>
+      <h3 style="margin-top: 14px;">Waktu skim recruiter</h3>
+      <p class="muted" style="margin-top: 8px;">Kalau lolos ATS pun, manusia hanya melirik CV rata-rata 6 detik.</p>
+    </div>
+    <div class="card">
+      <div class="dot"></div>
+      <div class="bubble pri" style="margin-bottom: 20px;"><i data-lucide="languages" style="width:30px;height:30px;"></i></div>
+      <div class="mono" style="font-size: 64px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--p);">ID<span style="font-size:36px; color: var(--n);"> ↔ </span>EN</div>
+      <h3 style="margin-top: 14px;">Keyword bilingual</h3>
+      <p class="muted" style="margin-top: 8px;">"Pengembang" vs "Developer"; ATS tidak otomatis menyamakan istilah lokal.</p>
+    </div>
+    <div class="card">
+      <div class="dot"></div>
+      <div class="bubble sec" style="margin-bottom: 20px;"><i data-lucide="search-x" style="width:30px;height:30px;"></i></div>
+      <div class="mono" style="font-size: 64px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--s);">0</div>
+      <h3 style="margin-top: 14px;">Feedback yang jelas</h3>
+      <p class="muted" style="margin-top: 8px;">Pelamar tidak pernah tahu kenapa CV mereka tidak dipanggil interview.</p>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 02 / 12 · Problem</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     03 — WHY IT MATTERS HERE
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="03 Why Indonesia">
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">03 / 12</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 24px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Kenapa Pasar Indonesia</span>
+  </div>
+  <h1>Tool ATS sekarang <span class="text-gradient">tidak bicara bahasa kita</span>.</h1>
+
+  <div class="grid-2" style="margin-top: 72px; gap: 72px; flex: 1;">
+    <div class="col gap-6">
+      <p class="lede" style="margin: 0;">
+        Tool seperti Jobscan dibuat untuk pasar US, fokus pada resume Amerika
+        Utara, single-language, dan harga $50/bulan. Job seeker Indonesia
+        butuh sesuatu yang memahami konteks lokal.
+      </p>
+      <div class="col gap-4" style="margin-top: 8px;">
+        <div class="row gap-4 items-center">
+          <div class="bubble pri" style="width:48px;height:48px;border-radius:14px;"><i data-lucide="check" style="width:24px;height:24px;"></i></div>
+          <div><h3>Format CV lokal</h3><p class="muted" style="margin: 4px 0 0;">Foto, NIK, tanggal lahir, masih lazim di CV ID dan harus diakomodasi.</p></div>
+        </div>
+        <div class="row gap-4 items-center">
+          <div class="bubble pri" style="width:48px;height:48px;border-radius:14px;"><i data-lucide="check" style="width:24px;height:24px;"></i></div>
+          <div><h3>Sinonim ID ↔ EN</h3><p class="muted" style="margin: 4px 0 0;">"Pemasaran" = "Marketing"; "Akuntan" = "Accountant". Dictionary built-in.</p></div>
+        </div>
+        <div class="row gap-4 items-center">
+          <div class="bubble pri" style="width:48px;height:48px;border-radius:14px;"><i data-lucide="check" style="width:24px;height:24px;"></i></div>
+          <div><h3>Harga terjangkau</h3><p class="muted" style="margin: 4px 0 0;">Free tier penuh untuk pelamar; tidak ada paywall di fitur dasar.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col gap-6">
+      <div class="card" style="padding: 40px;">
+        <div class="eyebrow" style="margin-bottom: 24px;">Snapshot Pasar</div>
+        <div class="col gap-6">
+          <div class="row items-center justify-between">
+            <div><h2 style="font-size: 56px;">9.9<span class="muted" style="font-size:28px;">jt</span></h2><p class="muted" style="margin: 4px 0 0;">Pencari kerja aktif di Indonesia (BPS, 2024)</p></div>
+            <div class="bubble sec lg"><i data-lucide="users" style="width:40px;height:40px;"></i></div>
+          </div>
+          <div style="height: 1px; background: var(--b3);"></div>
+          <div class="row items-center justify-between">
+            <div><h2 style="font-size: 56px;">98<span class="muted" style="font-size:28px;">%</span></h2><p class="muted" style="margin: 4px 0 0;">Perusahaan Fortune 500 memakai ATS untuk filtering awal</p></div>
+            <div class="bubble pri lg"><i data-lucide="bot" style="width:40px;height:40px;"></i></div>
+          </div>
+          <div style="height: 1px; background: var(--b3);"></div>
+          <div class="row items-center justify-between">
+            <div><h2 style="font-size: 56px;">0</h2><p class="muted" style="margin: 4px 0 0;">Tool ATS-checker yang fokus konteks Indonesia hari ini</p></div>
+            <div class="bubble acc lg"><i data-lucide="flag" style="width:40px;height:40px;"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 03 / 12 · Opportunity</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     04 — INTRODUCING HIRESIGHT
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide dark" data-screen-label="04 Introducing">
+  <div class="blob pri" style="width:680px;height:680px;top:-200px;right:-150px;opacity:.6;"></div>
+  <div class="blob acc" style="width:520px;height:520px;bottom:-180px;left:-120px;opacity:.45;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" style="filter: brightness(0) invert(1) opacity(0.9);" /> HireSight</div>
+  <div class="chrome-tr">04 / 12</div>
+
+  <div class="col grow" style="justify-content: center; max-width: 1500px;">
+    <div class="eyebrow-row" style="margin-bottom: 28px;">
+      <span class="bar"></span>
+      <span class="eyebrow">Introducing</span>
+    </div>
+    <h1 class="display" style="font-size: 144px;">HireSight.</h1>
+    <p class="lede" style="margin-top: 32px; max-width: 1300px; color: #c8d0de;">
+      Web-based ATS recommendation tool. Upload CV, tempel job description,
+      lalu AI kami menganalisis kesesuaian dan memberi rekomendasi perbaikan
+      yang bisa langsung kamu pakai.
+    </p>
+
+    <div class="grid-3" style="margin-top: 72px; gap: 24px;">
+      <div class="card" style="padding: 28px;">
+        <div class="eyebrow" style="margin-bottom: 14px; color: #8b95a9;">01</div>
+        <div class="row gap-3 items-center" style="margin-bottom: 10px;">
+          <i data-lucide="upload-cloud" style="width:28px;height:28px;color: var(--p);"></i>
+          <h3>Upload CV kamu</h3>
+        </div>
+        <p style="color: #c8d0de; margin: 0;">PDF / DOCX, maks 5MB. Drag-and-drop atau klik untuk pilih file.</p>
+      </div>
+      <div class="card" style="padding: 28px;">
+        <div class="eyebrow" style="margin-bottom: 14px; color: #8b95a9;">02</div>
+        <div class="row gap-3 items-center" style="margin-bottom: 10px;">
+          <i data-lucide="clipboard-paste" style="width:28px;height:28px;color: var(--p);"></i>
+          <h3>Tempel Job Description</h3>
+        </div>
+        <p style="color: #c8d0de; margin: 0;">Posisi yang dilamar + JD lengkap. Sumbernya bisa LinkedIn, JobStreet, Glints.</p>
+      </div>
+      <div class="card" style="padding: 28px;">
+        <div class="eyebrow" style="margin-bottom: 14px; color: #8b95a9;">03</div>
+        <div class="row gap-3 items-center" style="margin-bottom: 10px;">
+          <i data-lucide="sparkles" style="width:28px;height:28px;color: var(--p);"></i>
+          <h3>Dapatkan analisis AI</h3>
+        </div>
+        <p style="color: #c8d0de; margin: 0;">Match score, keyword gap, format issues, dan rekomendasi yang dipersonalisasi.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 04 / 12 · Product</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     05 — RESULT MOCK (HERO PRODUCT SHOT)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="05 Product Shot">
+  <div class="blob pri" style="width:420px;height:420px;top:-120px;left:-100px;opacity:.45;"></div>
+  <div class="blob acc" style="width:380px;height:380px;bottom:-100px;right:-80px;opacity:.45;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">05 / 12</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 18px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Product · Analysis Result</span>
+  </div>
+  <h2 style="margin-bottom: 36px;">Satu halaman, semua jawaban.</h2>
+
+  <div class="browser" style="flex: 1; display: flex; flex-direction: column;">
+    <div class="tab">
+      <span class="dot3" style="background:#ff5f57;"></span>
+      <span class="dot3" style="background:#febc2e;"></span>
+      <span class="dot3" style="background:#28c840;"></span>
+      <span class="url"><i data-lucide="lock" style="width:11px;height:11px;display:inline;vertical-align:-1px;"></i> hiresight.id/analyze/result/1042</span>
+      <div style="margin-left:auto;"><img src="logo.svg" alt="" style="width:18px;height:18px;"/></div>
+    </div>
+    <div class="body" style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px; flex:1;">
+      <!-- LEFT: Score overview + profile -->
+      <div class="col gap-4">
+        <div class="card" style="padding: 24px;">
+          <div class="row gap-2 items-center" style="margin-bottom: 6px;">
+            <i data-lucide="user-round" style="width:16px;height:16px;color: var(--p);"></i>
+            <span class="eyebrow" style="font-size: 11px; color: var(--p);">Candidate Profile · Fresh Graduate</span>
+          </div>
+          <h3 style="font-size: 22px;">Andi Pratama</h3>
+          <p class="muted" style="font-size: 14px; margin: 4px 0 0;">Apply: Frontend Engineer · PT Telkomsel</p>
+        </div>
+
+        <div class="card" style="padding: 24px; display: flex; gap: 24px; align-items: center;">
+          <div class="ring-wrap" style="width: 150px; height: 150px; flex-shrink: 0;">
+            <svg width="150" height="150" viewBox="0 0 200 200">
+              <circle class="ring-track" cx="100" cy="100" r="86"></circle>
+              <circle class="ring-prog" cx="100" cy="100" r="86" stroke-dasharray="540" stroke-dashoffset="129"></circle>
+            </svg>
+            <div class="ring-num"><div class="n" style="font-size: 42px;">76</div><div class="d" style="font-size: 9px;">/ 100</div></div>
+          </div>
+          <div>
+            <div class="eyebrow" style="font-size: 10px; margin-bottom: 4px;">Overall ATS Score</div>
+            <h3 style="font-size: 22px;">Hampir lolos.</h3>
+            <p style="font-size: 13px; margin: 4px 0 0;">CV kamu cukup baik, tapi ada 4 keyword penting yang masih hilang.</p>
+          </div>
+        </div>
+
+        <div class="grid-2" style="gap: 16px;">
+          <div class="card" style="padding: 18px;">
+            <div class="eyebrow" style="font-size: 10px;">Keyword</div>
+            <div class="mono" style="font-size: 36px; font-weight: 800; letter-spacing: -0.04em; color: var(--p); margin-top: 6px;">82<span style="font-size: 18px; color: var(--n);">/100</span></div>
+            <p style="font-size: 11px; margin: 6px 0 0; color: var(--n);">12 found · 4 missing</p>
+          </div>
+          <div class="card" style="padding: 18px;">
+            <div class="eyebrow" style="font-size: 10px;">Format</div>
+            <div class="mono" style="font-size: 36px; font-weight: 800; letter-spacing: -0.04em; color: color-mix(in srgb, var(--su) 55%, var(--bc)); margin-top: 6px;">94<span style="font-size: 18px; color: var(--n);">/100</span></div>
+            <p style="font-size: 11px; margin: 6px 0 0; color: var(--n);">Headings · sections · contact OK</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: keywords + suggestions -->
+      <div class="col gap-4">
+        <div class="card" style="padding: 22px;">
+          <div class="row items-center justify-between" style="margin-bottom: 12px;">
+            <span class="eyebrow" style="font-size: 11px;">Keywords Found · 12</span>
+            <i data-lucide="check-circle-2" style="width:18px;height:18px;color: color-mix(in srgb, var(--su) 50%, var(--bc));"></i>
+          </div>
+          <div class="row wrap gap-2">
+            <span class="pill found">React</span>
+            <span class="pill found">TypeScript</span>
+            <span class="pill found">Tailwind</span>
+            <span class="pill found">Git</span>
+            <span class="pill found">REST API</span>
+            <span class="pill found">Responsive</span>
+            <span class="pill found">Figma</span>
+            <span class="pill found">Agile</span>
+            <span class="pill found">+ 4 lainnya</span>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 22px;">
+          <div class="row items-center justify-between" style="margin-bottom: 12px;">
+            <span class="eyebrow" style="font-size: 11px;">Missing · 4</span>
+            <i data-lucide="x-circle" style="width:18px;height:18px;color: var(--er);"></i>
+          </div>
+          <div class="row wrap gap-2">
+            <span class="pill miss">Next.js <span class="mono" style="opacity:.7;">· wajib</span></span>
+            <span class="pill miss">Testing (Jest) <span class="mono" style="opacity:.7;">· wajib</span></span>
+            <span class="pill miss">CI/CD <span class="mono" style="opacity:.7;">· diutamakan</span></span>
+            <span class="pill miss">A11y <span class="mono" style="opacity:.7;">· diutamakan</span></span>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 22px; background: color-mix(in srgb, var(--p) 4%, transparent); border-color: color-mix(in srgb, var(--p) 25%, transparent);">
+          <div class="row gap-2 items-center" style="margin-bottom: 8px;">
+            <span style="font-size: 18px;">💡</span>
+            <span class="eyebrow" style="font-size: 11px; color: var(--p);">Tip · LinkedIn Bullet Template</span>
+          </div>
+          <p class="mono" style="font-size: 13px; line-height: 1.6; margin: 0; color: var(--bc);">
+            "Built a [feature] with <b>Next.js</b> + <b>Jest</b> coverage above [X]%,
+            deployed via <b>CI/CD</b> pipeline ([tool]); reduced [metric] by [%]."
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 05 / 12 · Product Walkthrough</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     06 — FEATURES
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="06 Features">
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">06 / 12</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 24px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Powerful Features</span>
+  </div>
+  <h1>Empat lapis analisis, <span class="text-gradient">satu CV.</span></h1>
+  <div class="deco-bar" style="margin-top: 16px;"></div>
+
+  <div class="grid-4" style="margin-top: 72px; flex: 1;">
+    <div class="card" style="padding: 36px;">
+      <div class="dot"></div>
+      <div class="bubble pri lg"><i data-lucide="bar-chart-3" style="width:40px;height:40px;"></i></div>
+      <div class="eyebrow" style="margin-top: 24px; color: var(--p);">01 · Match Score</div>
+      <h3 style="margin-top: 8px;">ATS Score 0–100</h3>
+      <p class="muted" style="margin-top: 12px;">Gabungan dari keyword + format + content. Jelas, terukur, bisa dilacak progress-nya.</p>
+    </div>
+    <div class="card" style="padding: 36px;">
+      <div class="dot"></div>
+      <div class="bubble sec lg"><i data-lucide="search" style="width:40px;height:40px;"></i></div>
+      <div class="eyebrow" style="margin-top: 24px; color: var(--s);">02 · Keyword Gap</div>
+      <h3 style="margin-top: 8px;">Found vs Missing</h3>
+      <p class="muted" style="margin-top: 12px;">Setiap keyword diberi bobot <b>wajib</b> / <b>diutamakan</b>, dengan sinonim ID ↔ EN.</p>
+    </div>
+    <div class="card" style="padding: 36px;">
+      <div class="dot"></div>
+      <div class="bubble acc lg"><i data-lucide="file-check-2" style="width:40px;height:40px;"></i></div>
+      <div class="eyebrow" style="margin-top: 24px; color: color-mix(in srgb, var(--a) 50%, var(--bc));">03 · Format Check</div>
+      <h3 style="margin-top: 8px;">ATS-Friendly?</h3>
+      <p class="muted" style="margin-top: 12px;">Cek heading, struktur section, kontak, kolom ganda, tabel, dan glyph aneh.</p>
+    </div>
+    <div class="card" style="padding: 36px;">
+      <div class="dot"></div>
+      <div class="bubble su lg"><i data-lucide="lightbulb" style="width:40px;height:40px;"></i></div>
+      <div class="eyebrow" style="margin-top: 24px; color: color-mix(in srgb, var(--su) 55%, var(--bc));">04 · AI Advice</div>
+      <h3 style="margin-top: 8px;">Bullet Templates</h3>
+      <p class="muted" style="margin-top: 12px;">Rekomendasi konten + LinkedIn-style bullet siap copy dengan <span class="mono">[placeholder]</span>.</p>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 06 / 12 · Features</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     07 — CANDIDATE PROFILE
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="07 Candidate Profile">
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">07 / 12</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 24px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Personalization Engine</span>
+  </div>
+  <h1>Rekomendasi yang <span class="text-gradient">tahu kamu siapa</span>.</h1>
+  <p class="lede" style="margin-top: 20px; max-width: 1200px;">
+    AI mengklasifikasikan kandidat ke salah satu dari tiga profil. Saran yang
+    diberikan menyesuaikan. Fresh Graduate butuh nada berbeda dari Career Changer.
+  </p>
+
+  <div class="grid-3" style="margin-top: 56px; flex: 1;">
+    <div class="card" style="padding: 36px; border-color: color-mix(in srgb, var(--p) 35%, transparent);">
+      <div class="bubble pri lg"><i data-lucide="briefcase" style="width:40px;height:40px;"></i></div>
+      <div class="eyebrow" style="margin-top: 22px; color: var(--p);">Profile 01</div>
+      <h2 style="font-size: 38px; margin-top: 8px;">Experienced</h2>
+      <p class="muted" style="margin-top: 14px;">3+ tahun di domain yang relevan. Saran fokus pada <b>quantifying impact</b> & <b>positioning seniority</b>.</p>
+      <div style="height: 1px; background: var(--b3); margin: 22px 0;"></div>
+      <div class="col gap-2">
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="trending-up" style="width:14px;height:14px;display:inline;color:var(--p);vertical-align:-2px;"></i> Tambahkan metrik dampak</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="award" style="width:14px;height:14px;display:inline;color:var(--p);vertical-align:-2px;"></i> Highlight leadership scope</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="filter" style="width:14px;height:14px;display:inline;color:var(--p);vertical-align:-2px;"></i> Trim pengalaman lama yang tidak relevan</p>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 36px; border-color: color-mix(in srgb, var(--su) 45%, transparent);">
+      <div class="bubble su lg"><i data-lucide="graduation-cap" style="width:40px;height:40px;"></i></div>
+      <div class="eyebrow" style="margin-top: 22px; color: color-mix(in srgb, var(--su) 55%, var(--bc));">Profile 02</div>
+      <h2 style="font-size: 38px; margin-top: 8px;">Fresh Graduate</h2>
+      <p class="muted" style="margin-top: 14px;">Baru lulus, pengalaman terbatas. Saran fokus pada <b>projects</b>, <b>coursework</b>, dan <b>transferable skills</b>.</p>
+      <div style="height: 1px; background: var(--b3); margin: 22px 0;"></div>
+      <div class="col gap-2">
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="folder-git-2" style="width:14px;height:14px;display:inline;color: color-mix(in srgb, var(--su) 55%, var(--bc));vertical-align:-2px;"></i> Tonjolkan project + organisasi</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="book-open" style="width:14px;height:14px;display:inline;color: color-mix(in srgb, var(--su) 55%, var(--bc));vertical-align:-2px;"></i> Kaitkan coursework dengan JD</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="lightbulb" style="width:14px;height:14px;display:inline;color: color-mix(in srgb, var(--su) 55%, var(--bc));vertical-align:-2px;"></i> Bullet template siap pakai</p>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 36px; border-color: color-mix(in srgb, var(--a) 55%, transparent);">
+      <div class="bubble acc lg"><i data-lucide="route" style="width:40px;height:40px;"></i></div>
+      <div class="eyebrow" style="margin-top: 22px; color: color-mix(in srgb, var(--a) 50%, var(--bc));">Profile 03</div>
+      <h2 style="font-size: 38px; margin-top: 8px;">Career Changer</h2>
+      <p class="muted" style="margin-top: 14px;">Pindah domain / industri. Saran fokus pada <b>narrative</b> & <b>skill bridging</b>.</p>
+      <div style="height: 1px; background: var(--b3); margin: 22px 0;"></div>
+      <div class="col gap-2">
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="arrow-right-left" style="width:14px;height:14px;display:inline;color: color-mix(in srgb, var(--a) 50%, var(--bc));vertical-align:-2px;"></i> Tulis ulang summary section</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="link" style="width:14px;height:14px;display:inline;color: color-mix(in srgb, var(--a) 50%, var(--bc));vertical-align:-2px;"></i> Translate skill ke domain baru</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="star" style="width:14px;height:14px;display:inline;color: color-mix(in srgb, var(--a) 50%, var(--bc));vertical-align:-2px;"></i> Highlight sertifikasi relevan</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 07 / 12 · Personalization</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     08 — DIFFERENTIATION
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="08 Differentiation">
+  <div class="blob acc" style="width:420px;height:420px;top:-100px;right:-80px;opacity:.5;"></div>
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">08 / 12</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 24px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Why HireSight, Not Jobscan</span>
+  </div>
+  <h1>Sama-sama ATS checker. <span class="text-gradient">Beda penonton.</span></h1>
+
+  <div class="card" style="margin-top: 56px; padding: 0; overflow: hidden; flex: 1;">
+    <table class="vs">
+      <thead>
+        <tr>
+          <th style="width: 32%;">Capability</th>
+          <th style="width: 22%;">Jobscan / Resume Worded</th>
+          <th style="width: 22%; color: var(--p);">HireSight</th>
+          <th style="width: 24%;">Why It Matters</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="first">Bilingual keyword matching (ID ↔ EN)</td>
+          <td class="no"><i data-lucide="x" style="width:18px;height:18px;display:inline;color:var(--n);"></i> Tidak</td>
+          <td class="yes"><i data-lucide="check" style="width:18px;height:18px;display:inline;"></i> Native</td>
+          <td class="muted">"Pemasaran" = "Marketing" tanpa perlu translate manual.</td>
+        </tr>
+        <tr>
+          <td class="first">Candidate-profile classification</td>
+          <td class="no">Generic advice</td>
+          <td class="yes">3 profil otomatis</td>
+          <td class="muted">Fresh grad ≠ Career changer ≠ Senior. Saran berbeda.</td>
+        </tr>
+        <tr>
+          <td class="first">Format check untuk CV Indonesia</td>
+          <td class="no">US-centric heuristics</td>
+          <td class="yes">Mendukung foto, NIK</td>
+          <td class="muted">CV ID masih sering pakai foto & data personal.</td>
+        </tr>
+        <tr>
+          <td class="first">LinkedIn bullet templates</td>
+          <td class="no">Premium only</td>
+          <td class="yes">Free tier</td>
+          <td class="muted">Copy-paste langsung, dengan <span class="mono">[placeholder]</span> yang jelas.</td>
+        </tr>
+        <tr>
+          <td class="first">Pricing</td>
+          <td class="no">$49.95 / bulan</td>
+          <td class="yes">Free → Rp 49k / bulan (proposed)</td>
+          <td class="muted">Sesuai daya beli mahasiswa & fresh grad.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 08 / 12 · Differentiation</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     09 — TECH STACK
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="09 Tech">
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">09 / 12</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 24px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Under The Hood</span>
+  </div>
+  <h1>Stack yang <span class="text-gradient">modern, ringan, scalable</span>.</h1>
+
+  <div class="grid-2" style="margin-top: 48px; flex: 1; gap: 40px;">
+    <div class="col gap-4">
+      <div class="eyebrow">Frontend</div>
+      <div class="card">
+        <div class="dot"></div>
+        <div class="grid-2" style="gap: 18px;">
+          <div class="col gap-2"><div class="bubble pri" style="width:44px;height:44px;border-radius:12px;"><i data-lucide="layout-dashboard" style="width:22px;height:22px;"></i></div><h3 style="font-size: 17px; margin-top: 4px;">Next.js 16</h3><p class="muted mono" style="font-size: 12px; margin: 0;">React 19 · App Router</p></div>
+          <div class="col gap-2"><div class="bubble pri" style="width:44px;height:44px;border-radius:12px;"><i data-lucide="palette" style="width:22px;height:22px;"></i></div><h3 style="font-size: 17px; margin-top: 4px;">Tailwind 4</h3><p class="muted mono" style="font-size: 12px; margin: 0;">+ shadcn/ui</p></div>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-top: 8px;">Backend &amp; Data</div>
+      <div class="card">
+        <div class="dot"></div>
+        <div class="grid-3" style="gap: 18px;">
+          <div class="col gap-2"><div class="bubble sec" style="width:44px;height:44px;border-radius:12px;"><i data-lucide="server" style="width:22px;height:22px;"></i></div><h3 style="font-size: 17px; margin-top: 4px;">Go 1.25</h3><p class="muted mono" style="font-size: 12px; margin: 0;">Gin 1.12</p></div>
+          <div class="col gap-2"><div class="bubble sec" style="width:44px;height:44px;border-radius:12px;"><i data-lucide="layers" style="width:22px;height:22px;"></i></div><h3 style="font-size: 17px; margin-top: 4px;">GORM 1.31</h3><p class="muted mono" style="font-size: 12px; margin: 0;">ORM layer</p></div>
+          <div class="col gap-2"><div class="bubble sec" style="width:44px;height:44px;border-radius:12px;"><i data-lucide="database" style="width:22px;height:22px;"></i></div><h3 style="font-size: 17px; margin-top: 4px;">PostgreSQL 18</h3><p class="muted mono" style="font-size: 12px; margin: 0;">Docker · Azure VM</p></div>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-top: 8px;">Auth &amp; Infra</div>
+      <div class="card">
+        <div class="dot"></div>
+        <div class="row gap-4" style="align-items: stretch;">
+          <div class="col gap-2" style="flex: 0 0 30%;">
+            <div class="bubble pri" style="width:44px;height:44px;border-radius:12px;"><i data-lucide="key-round" style="width:22px;height:22px;"></i></div>
+            <h3 style="font-size: 17px; margin-top: 4px;">JWT Auth</h3>
+            <p class="muted mono" style="font-size: 12px; margin: 0;">HTTP-only cookie</p>
+          </div>
+          <div style="width:1px; background: var(--b3);"></div>
+          <div class="col gap-3" style="flex: 1;">
+            <div class="row wrap gap-2">
+              <span class="pill"><i data-lucide="cloud" style="width:12px;height:12px;"></i> Azure VM</span>
+              <span class="pill"><i data-lucide="box" style="width:12px;height:12px;"></i> Docker Compose</span>
+              <span class="pill"><i data-lucide="shuffle" style="width:12px;height:12px;"></i> Nginx</span>
+              <span class="pill"><i data-lucide="activity" style="width:12px;height:12px;"></i> PM2</span>
+              <span class="pill"><i data-lucide="git-branch" style="width:12px;height:12px;"></i> GitHub Actions</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col gap-4">
+      <div class="eyebrow">AI Layer</div>
+      <div class="card" style="padding: 28px;">
+        <div class="dot"></div>
+        <div class="row gap-4 items-center">
+          <div class="bubble acc lg"><i data-lucide="brain-circuit" style="width:44px;height:44px;"></i></div>
+          <div>
+            <div class="eyebrow" style="font-size: 11px;">Groq API</div>
+            <h2 style="font-size: 30px; margin-top: 4px;">llama-3.3-70b-versatile</h2>
+            <p class="muted mono" style="font-size: 13px; margin: 6px 0 0;">Structured JSON · ID ↔ EN dictionary preprocessing</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-top: 8px;">Azure Cloud Services</div>
+      <div class="card" style="padding: 28px;">
+        <div class="dot"></div>
+        <div class="row gap-4 items-start" style="margin-bottom: 18px;">
+          <div class="bubble pri" style="width:52px;height:52px;border-radius:14px;"><i data-lucide="scan-text" style="width:26px;height:26px;"></i></div>
+          <div style="flex: 1;">
+            <h3 style="font-size: 19px;">Azure Document Intelligence</h3>
+            <p class="muted" style="font-size: 14px; margin: 4px 0 0;">Model <span class="mono" style="color: var(--bc);">prebuilt-read</span> untuk ekstraksi teks PDF, termasuk CV hasil scan / OCR.</p>.</p>
+          </div>
+        </div>
+        <div style="height: 1px; background: var(--b3); margin: 4px 0 18px;"></div>
+        <div class="row gap-4 items-start">
+          <div class="bubble pri" style="width:52px;height:52px;border-radius:14px;"><i data-lucide="hard-drive" style="width:26px;height:26px;"></i></div>
+          <div style="flex: 1;">
+            <h3 style="font-size: 19px;">Azure Blob Storage</h3>
+            <p class="muted" style="font-size: 14px; margin: 4px 0 0;">Penyimpanan file resume (PDF) dan avatar pengguna; durable dan terpisah dari DB.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card muted" style="padding: 18px 22px;">
+        <div class="row items-center gap-3">
+          <i data-lucide="shield-check" style="width:18px;height:18px;color: var(--p);"></i>
+          <p class="muted" style="margin: 0; font-size: 14px;">
+            Raw CV di-discard setelah analisis selesai; hanya hasil terstruktur yang disimpan per akun.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 09 / 12 · Tech</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     10 — ROADMAP
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="10 Roadmap">
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">10 / 12</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 24px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Roadmap</span>
+  </div>
+  <h1>Dari senior project, <span class="text-gradient">menuju produk nyata</span>.</h1>
+
+  <div style="margin-top: 80px; flex: 1; position: relative;">
+    <!-- timeline line -->
+    <div style="position: absolute; top: 60px; left: 4%; right: 4%; height: 2px; background: var(--b3);"></div>
+    <div style="position: absolute; top: 60px; left: 4%; width: 25%; height: 2px; background: var(--p); border-radius: 2px;"></div>
+
+    <div class="grid-4" style="gap: 32px; padding: 0 0;">
+      <div class="col items-start gap-4">
+        <div style="width: 28px; height: 28px; border-radius: 999px; background: var(--p); border: 6px solid var(--b1); box-shadow: 0 0 0 2px var(--p); margin-top: 46px;"></div>
+        <div class="eyebrow" style="color: var(--p);">Q1 2026 · NOW</div>
+        <h3>MVP Shipped</h3>
+        <p class="muted" style="margin: 0;">Upload, analyze, score, keyword gap, AI bullets. Single-user free.</p>
+        <div class="row wrap gap-2" style="margin-top: 4px;">
+          <span class="pill found"><i data-lucide="check" style="width:12px;height:12px;"></i> Auth</span>
+          <span class="pill found"><i data-lucide="check" style="width:12px;height:12px;"></i> Dashboard</span>
+          <span class="pill found"><i data-lucide="check" style="width:12px;height:12px;"></i> History</span>
+        </div>
+      </div>
+
+      <div class="col items-start gap-4">
+        <div style="width: 20px; height: 20px; border-radius: 999px; background: var(--b1); border: 4px solid var(--p); margin-top: 50px;"></div>
+        <div class="eyebrow">Q2 2026</div>
+        <h3>Recruiter Feedback</h3>
+        <p class="muted" style="margin: 0;">Pilot dengan 5 HR partner Indonesia. Validasi keyword dictionary.</p>
+        <div class="row wrap gap-2" style="margin-top: 4px;">
+          <span class="pill">Partner program</span>
+          <span class="pill">A/B prompt</span>
+        </div>
+      </div>
+
+      <div class="col items-start gap-4">
+        <div style="width: 20px; height: 20px; border-radius: 999px; background: var(--b1); border: 4px solid var(--b3); margin-top: 50px;"></div>
+        <div class="eyebrow">Q3 2026</div>
+        <h3>CV Builder</h3>
+        <p class="muted" style="margin: 0;">Edit langsung di app, ATS-friendly templates, export PDF tunggal.</p>
+        <div class="row wrap gap-2" style="margin-top: 4px;">
+          <span class="pill">Inline editor</span>
+          <span class="pill">3 template</span>
+        </div>
+      </div>
+
+      <div class="col items-start gap-4">
+        <div style="width: 20px; height: 20px; border-radius: 999px; background: var(--b1); border: 4px solid var(--b3); margin-top: 50px;"></div>
+        <div class="eyebrow">Q4 2026</div>
+        <h3>Job Matching</h3>
+        <p class="muted" style="margin: 0;">Integrasi job board → otomatis cari lowongan yang cocok dengan CV.</p>
+        <div class="row wrap gap-2" style="margin-top: 4px;">
+          <span class="pill">JobStreet API</span>
+          <span class="pill">Glints API</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 10 / 12 · Roadmap</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     11 — TEAM
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="11 Team">
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">11 / 12</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 24px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Kelompok 15 · Senior Project 2026</span>
+  </div>
+  <h1>Tim bertiga, <span class="text-gradient">tiga peran</span>.</h1>
+
+  <div class="grid-3" style="margin-top: 56px; flex: 1;">
+    <div class="card" style="padding: 36px;">
+      <div class="dot"></div>
+      <div style="width: 88px; height: 88px; border-radius: 999px; background: color-mix(in srgb, var(--p) 12%, transparent); color: var(--p); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800;">K</div>
+      <h2 style="margin-top: 24px; font-size: 30px; line-height: 1.15;">Kistosi Al Ghifari</h2>
+      <div class="eyebrow" style="margin-top: 10px; color: var(--p);">Project Leader · AI Engineer</div>
+      <p class="muted" style="margin-top: 18px;">Memimpin arah produk dan engineering. Prompt design, keyword dictionary, evaluasi output LLM.</p>
+      <div class="row wrap gap-2" style="margin-top: 24px;">
+        <span class="pill"><i data-lucide="compass" style="width:12px;height:12px;"></i> Project Lead</span>
+        <span class="pill"><i data-lucide="brain-circuit" style="width:12px;height:12px;"></i> AI Engineer</span>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 36px;">
+      <div class="dot"></div>
+      <div style="width: 88px; height: 88px; border-radius: 999px; background: color-mix(in srgb, var(--s) 14%, transparent); color: var(--s); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800;">K</div>
+      <h2 style="margin-top: 24px; font-size: 30px; line-height: 1.15;">Kurniawan Surya Atmaja</h2>
+      <div class="eyebrow" style="margin-top: 10px; color: var(--s);">Backend · Database Engineer</div>
+      <p class="muted" style="margin-top: 18px;">Go + Gin API, GORM schema, integrasi Azure (Blob, Document Intelligence), deployment &amp; CI.</p>
+      <div class="row wrap gap-2" style="margin-top: 24px;">
+        <span class="pill"><i data-lucide="server" style="width:12px;height:12px;"></i> Backend</span>
+        <span class="pill"><i data-lucide="database" style="width:12px;height:12px;"></i> Database</span>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 36px;">
+      <div class="dot"></div>
+      <div style="width: 88px; height: 88px; border-radius: 999px; background: color-mix(in srgb, var(--a) 18%, transparent); color: color-mix(in srgb, var(--a) 50%, var(--bc)); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800;">A</div>
+      <h2 style="margin-top: 24px; font-size: 30px; line-height: 1.15;">Abdul Halim Edi Rahmansyah</h2>
+      <div class="eyebrow" style="margin-top: 10px; color: color-mix(in srgb, var(--a) 50%, var(--bc));">Software Engineer · UI/UX</div>
+      <p class="muted" style="margin-top: 18px;">Next.js + design system, UX flow analyze → result, dan seluruh komponen frontend yang dipakai user.</p>
+      <div class="row wrap gap-2" style="margin-top: 24px;">
+        <span class="pill"><i data-lucide="layout-dashboard" style="width:12px;height:12px;"></i> Software Eng</span>
+        <span class="pill"><i data-lucide="figma" style="width:12px;height:12px;"></i> UI/UX</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 11 / 12 · Team</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     12 — CLOSING / CTA
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide dark" data-screen-label="12 Closing">
+  <div class="blob pri" style="width:720px;height:720px;top:-200px;left:-200px;opacity:.55;"></div>
+  <div class="blob acc" style="width:600px;height:600px;bottom:-200px;right:-150px;opacity:.45;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" style="filter: brightness(0) invert(1) opacity(0.9);" /> HireSight</div>
+  <div class="chrome-tr">12 / 12</div>
+
+  <div class="col grow" style="justify-content: center; max-width: 1500px;">
+    <div class="eyebrow-row" style="margin-bottom: 28px;">
+      <span class="bar"></span>
+      <span class="eyebrow">Thank You</span>
+    </div>
+    <h1 class="display" style="font-size: 128px;">
+      Let's help Indonesia<br />
+      <span class="text-gradient">land more interviews.</span>
+    </h1>
+    <p class="lede" style="margin-top: 36px; max-width: 1200px; color: #c8d0de;">
+      Coba prototype-nya, bagikan ke teman yang sedang cari kerja, atau
+      hubungi tim kami untuk kolaborasi pilot recruiter.
+    </p>
+
+    <div class="row gap-4 items-center" style="margin-top: 56px; flex-wrap: wrap;">
+      <a class="btn-primary" href="http://20.198.216.160" target="_blank" rel="noopener" style="text-decoration: none;"><i data-lucide="external-link" style="width:18px;height:18px;"></i> 20.198.216.160</a>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 12 / 12 · Kelompok 15 · 2026</div>
+  <div class="chrome-br" style="color:#c8d0de;">Smarter CV, Stronger Career.</div>
+</section>
+
+</deck-stage>
+
+<script>
+  // Render Lucide icons once everything is on the page.
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) window.lucide.createIcons();
+  });
+</script>
+<script>
+(async () => {
+  try { await customElements.whenDefined('deck-stage'); } catch (e) {}
+  const ds = document.querySelector('deck-stage');
+  if (ds) {
+    // Weigh only slide children — same filter as deck-stage.length. Skipping
+    // slotted script/style/template keeps inline Babel/CSS from registering
+    // as stable "content" before the framework has mounted anything.
+    const weigh = () => {
+      let text = 0, media = 0;
+      for (const c of ds.children) {
+        const t = c.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+        text += (c.textContent || '').trim().length;
+        media += c.querySelectorAll('img,svg,canvas,video').length;
+      }
+      return text + media * 100;
+    };
+    const deadline = Date.now() + 15000;
+    let last = -1, stable = 0;
+    while (Date.now() < deadline) {
+      const n = weigh();
+      if (n > 0 && n === last) { if (++stable >= 2) break; } else { stable = 0; }
+      last = n;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  try { await document.fonts.ready; } catch (e) {}
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+})();
+</script>
+</body>
+</html>

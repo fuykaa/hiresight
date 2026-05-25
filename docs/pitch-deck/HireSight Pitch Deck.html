@@ -1,0 +1,1363 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<title>HireSight — Pitch Deck</title>
+<link rel="stylesheet" href="tokens.css" />
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="deck-stage.js"></script>
+<style>
+  /* ─── Stage / slide chrome ─────────────────────────────────────────── */
+  html, body { margin: 0; background: #0b0d12; }
+  deck-stage { --slide-w: 1920px; --slide-h: 1080px; }
+  section.slide {
+    width: 1920px; height: 1080px;
+    background: var(--b1); color: var(--bc);
+    font-family: var(--font-sans);
+    position: relative; overflow: hidden;
+    padding: 80px 112px;
+    box-sizing: border-box;
+    display: flex; flex-direction: column;
+  }
+  /* Persistent chrome */
+  .chrome-tl, .chrome-tr, .chrome-br {
+    position: absolute; z-index: 5;
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--n);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .chrome-tl { top: 48px; left: 112px; }
+  .chrome-tr { top: 48px; right: 112px; }
+  .chrome-br { bottom: 48px; right: 112px; }
+  .chrome-tl img { width: 22px; height: 22px; }
+  .chrome-page { font-family: var(--font-mono); font-weight: 600; color: var(--bc); }
+
+  /* Section ID strip (bottom-left) */
+  .chrome-bl {
+    position: absolute; bottom: 48px; left: 112px; z-index: 5;
+    display: flex; align-items: center; gap: 14px;
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--n);
+  }
+  .chrome-bl .bar { width: 28px; height: 2px; background: var(--p); border-radius: 2px; }
+
+  /* Eyebrow + section header conventions */
+  .eyebrow-row { display: flex; align-items: center; gap: 14px; }
+  .eyebrow-row .bar { width: 40px; height: 2px; background: var(--p); border-radius: 2px; }
+  .eyebrow {
+    font-size: 13px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--n);
+  }
+  .deco-bar {
+    width: 80px; height: 3px; background: var(--p);
+    border-radius: 2px; margin-top: 8px;
+  }
+
+  /* Typography overrides for slide scale */
+  .slide h1.display {
+    font-size: 96px; line-height: 0.98;
+    letter-spacing: -0.035em; font-weight: 800;
+    margin: 0;
+  }
+  .slide h1 {
+    font-size: 68px; line-height: 1.0;
+    letter-spacing: -0.03em; font-weight: 800;
+    margin: 0;
+  }
+  .slide h2 {
+    font-size: 52px; line-height: 1.05;
+    letter-spacing: -0.025em; font-weight: 800;
+    margin: 0;
+  }
+  .slide h3 {
+    font-size: 28px; line-height: 1.2;
+    font-weight: 700; margin: 0;
+  }
+  .slide p, .slide li {
+    font-size: 22px; line-height: 1.5;
+    color: var(--bc);
+  }
+  .slide .lede {
+    font-size: 24px; line-height: 1.45;
+    color: var(--n); max-width: 1100px; font-weight: 500;
+  }
+  .text-gradient {
+    background: linear-gradient(90deg, var(--p), var(--a));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  .mono { font-family: var(--font-mono); }
+
+  /* Decorative blur blobs (signature) */
+  .blob { position: absolute; border-radius: 999px; filter: blur(120px); pointer-events: none; z-index: 0; }
+  .blob.pri { background: color-mix(in srgb, var(--p) 35%, transparent); }
+  .blob.acc { background: color-mix(in srgb, var(--a) 45%, transparent); }
+  .blob.sec { background: color-mix(in srgb, var(--s) 35%, transparent); }
+  .slide > *:not(.blob):not(.chrome-tl):not(.chrome-tr):not(.chrome-br):not(.chrome-bl) { position: relative; z-index: 1; }
+
+  /* Cards */
+  .card {
+    background: var(--b1);
+    border: 1px solid var(--b3);
+    border-radius: 20px;
+    box-shadow: var(--shadow-sm);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card .dot {
+    position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: color-mix(in srgb, var(--p) 10%, transparent);
+    filter: blur(40px);
+    border-radius: 999px;
+  }
+  .card.muted { background: var(--b2); }
+
+  /* Icon bubble */
+  .bubble {
+    width: 56px; height: 56px;
+    border-radius: 18px;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .bubble.pri { background: color-mix(in srgb, var(--p) 12%, transparent); color: var(--p); }
+  .bubble.sec { background: color-mix(in srgb, var(--s) 14%, transparent); color: var(--s); }
+  .bubble.acc { background: color-mix(in srgb, var(--a) 18%, transparent); color: color-mix(in srgb, var(--a) 70%, var(--bc)); }
+  .bubble.su  { background: color-mix(in srgb, var(--su) 18%, transparent); color: color-mix(in srgb, var(--su) 60%, var(--bc)); }
+  .bubble.er  { background: color-mix(in srgb, var(--er) 14%, transparent); color: var(--er); }
+  .bubble.wa  { background: color-mix(in srgb, var(--wa) 25%, transparent); color: color-mix(in srgb, var(--wa) 55%, var(--bc)); }
+  .bubble.lg { width: 80px; height: 80px; border-radius: 22px; }
+
+  /* Badges / pills */
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 13px; font-weight: 700;
+    border: 1px solid color-mix(in srgb, var(--p) 40%, transparent);
+    color: var(--p);
+    background: color-mix(in srgb, var(--p) 6%, transparent);
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+    background: var(--b2); color: var(--bc);
+    border: 1px solid var(--b3);
+  }
+  .pill.req { color: var(--er); border-color: color-mix(in srgb, var(--er) 35%, transparent); background: color-mix(in srgb, var(--er) 8%, transparent); }
+  .pill.pref{ color: var(--p);  border-color: color-mix(in srgb, var(--p) 35%, transparent);  background: color-mix(in srgb, var(--p) 6%, transparent); }
+  .pill.found{ color: color-mix(in srgb, var(--su) 50%, var(--bc)); border-color: color-mix(in srgb, var(--su) 50%, transparent); background: color-mix(in srgb, var(--su) 12%, transparent); }
+  .pill.miss { color: var(--er); border-color: color-mix(in srgb, var(--er) 35%, transparent); background: color-mix(in srgb, var(--er) 8%, transparent); }
+
+  /* Buttons (decorative — non-interactive on slides) */
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 28px; border-radius: 18px;
+    background: var(--p); color: var(--pc);
+    font-size: 16px; font-weight: 700;
+    box-shadow: 0 14px 24px -8px color-mix(in srgb, var(--p) 40%, transparent);
+    border: none;
+  }
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 28px; border-radius: 18px;
+    background: transparent; color: inherit;
+    font-size: 16px; font-weight: 700;
+    border: 1px solid var(--b3);
+  }
+
+  /* Score ring */
+  .ring-wrap {
+    position: relative; width: 200px; height: 200px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-track { fill: none; stroke: var(--b2); stroke-width: 14; }
+  .ring-prog  { fill: none; stroke: var(--p); stroke-width: 14; stroke-linecap: round; }
+  .ring-prog.su { stroke: color-mix(in srgb, var(--su) 60%, var(--bc)); }
+  .ring-prog.wa { stroke: color-mix(in srgb, var(--wa) 50%, var(--bc)); }
+  .ring-num {
+    position: absolute; text-align: center;
+  }
+  .ring-num .n { font-family: var(--font-mono); font-size: 56px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--bc); }
+  .ring-num .d { font-size: 11px; font-weight: 800; letter-spacing: 0.2em; color: var(--n); text-transform: uppercase; margin-top: 6px; }
+
+  /* Tables */
+  .vs {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    font-size: 16px;
+  }
+  .vs th, .vs td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--b3); }
+  .vs th { font-size: 11px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--n); background: var(--b2); }
+  .vs td.first { font-weight: 700; }
+  .vs .yes { color: color-mix(in srgb, var(--su) 50%, var(--bc)); font-weight: 800; }
+  .vs .no  { color: var(--n); }
+
+  /* Mock browser frame for product preview */
+  .browser {
+    background: var(--b1);
+    border: 1px solid var(--b3);
+    border-radius: 16px;
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+  }
+  .browser .tab {
+    background: var(--b2);
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--b3);
+  }
+  .browser .dot3 { width: 10px; height: 10px; border-radius: 999px; }
+  .browser .url {
+    margin-left: 12px; padding: 4px 14px; border-radius: 999px;
+    background: var(--b1); border: 1px solid var(--b3);
+    font-family: var(--font-mono); font-size: 12px; color: var(--n);
+  }
+  .browser .body { padding: 24px; }
+
+  /* Utility */
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+  .row { display: flex; }
+  .col { display: flex; flex-direction: column; }
+  .gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; }
+  .gap-6 { gap: 24px; } .gap-8 { gap: 32px; } .gap-10 { gap: 40px; }
+  .items-center { align-items: center; }
+  .items-start { align-items: flex-start; }
+  .justify-between { justify-content: space-between; }
+  .wrap { flex-wrap: wrap; }
+  .grow { flex: 1; }
+  .muted { color: var(--n); }
+  .strike { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--er) 60%, transparent); text-decoration-thickness: 2px; }
+
+  /* Architecture diagram boxes */
+  .arch-node {
+    border: 1px solid var(--b3);
+    border-radius: 14px;
+    padding: 14px 18px;
+    background: var(--b1);
+    box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; gap: 12px;
+    font-size: 15px;
+    min-width: 200px;
+  }
+  .arch-node .lbl { display: flex; flex-direction: column; }
+  .arch-node .name { font-weight: 800; font-size: 17px; }
+  .arch-node .sub  { font-family: var(--font-mono); color: var(--n); font-size: 12px; }
+  .arch-node.pri { border-color: color-mix(in srgb, var(--p) 40%, transparent); }
+  .arch-node.sec { border-color: color-mix(in srgb, var(--s) 40%, transparent); }
+  .arch-node.acc { border-color: color-mix(in srgb, var(--a) 50%, transparent); }
+  .arch-node.su  { border-color: color-mix(in srgb, var(--su) 50%, transparent); }
+
+  .conn {
+    position: relative; flex: 1; min-width: 60px;
+    border-top: 2px dashed var(--b3);
+    height: 1px;
+    align-self: center;
+  }
+  .conn::after {
+    content: ''; position: absolute; right: -2px; top: -7px;
+    border: 6px solid transparent; border-left-color: var(--b3);
+  }
+  .conn-label {
+    position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 11px; color: var(--n);
+    white-space: nowrap;
+    background: var(--b1); padding: 0 6px;
+  }
+
+  /* Slide-specific section colorings */
+  .slide.dark {
+    background: #1f2430;
+    color: #ECEFF4;
+  }
+  .slide.dark .muted { color: #8b95a9; }
+  .slide.dark .card { background: #262c3a; border-color: #2f3646; }
+  .slide.dark .card.muted { background: #1a1f2a; }
+  .slide.dark .chrome-tl, .slide.dark .chrome-tr, .slide.dark .chrome-br, .slide.dark .chrome-bl { color: #8b95a9; }
+  .slide.dark .chrome-page { color: #ECEFF4; }
+  .slide.dark .pill { background: #1a1f2a; color: #ECEFF4; border-color: #2f3646; }
+  .slide.dark .vs th { background: #1a1f2a; color: #8b95a9; }
+  .slide.dark .vs th, .slide.dark .vs td { border-color: #2f3646; }
+  .slide.dark .browser { background: #262c3a; border-color: #2f3646; }
+  .slide.dark .browser .tab { background: #1a1f2a; border-color: #2f3646; }
+  .slide.dark .browser .url { background: #262c3a; border-color: #2f3646; }
+  .slide.dark .bubble.pri { background: rgba(94,129,172,0.18); }
+  .slide.dark .ring-track { stroke: #2f3646; }
+  .slide.dark .arch-node { background: #262c3a; border-color: #2f3646; }
+</style>
+</head>
+<body>
+
+<deck-stage>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     01 — COVER
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="01 Cover">
+  <div class="blob pri" style="width:520px;height:520px;top:-120px;left:-120px;"></div>
+  <div class="blob acc" style="width:520px;height:520px;bottom:-160px;right:-100px;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">Responsi Senior Project · Kelompok 15 · 2026</div>
+
+  <div class="col grow" style="justify-content:center; max-width: 1500px;">
+    <div class="eyebrow-row" style="margin-bottom: 28px;">
+      <span class="bar"></span>
+      <span class="eyebrow">AI-Powered ATS Resume Analyzer</span>
+    </div>
+    <h1 class="display">
+      Smarter CV,<br />
+      <span class="text-gradient">Stronger Career.</span>
+    </h1>
+    <p class="lede" style="margin-top: 32px; max-width: 1200px;">
+      Aplikasi web yang menganalisis kesesuaian CV dengan job description
+      berdasarkan standar Applicant Tracking System — transparan, terukur,
+      dan dirancang untuk konteks Indonesia.
+    </p>
+
+    <div class="row gap-6" style="margin-top: 48px; flex-wrap: wrap; align-items: center;">
+      <span class="badge"><i data-lucide="sparkles" style="width:16px;height:16px;"></i> Web App · Bilingual ID ↔ EN</span>
+      <span class="pill"><i data-lucide="zap" style="width:14px;height:14px;"></i> Llama 3.3 70B via Groq</span>
+      <span class="pill"><i data-lucide="cloud" style="width:14px;height:14px;"></i> Azure VM · Docker · Nginx</span>
+      <span class="pill"><i data-lucide="users" style="width:14px;height:14px;"></i> Kelompok 15 — Senior Project 2026</span>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 01 / 13 · Cover</div>
+  <div class="chrome-br"><span class="chrome-page">hiresight · 20.198.216.160</span></div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     02 — LATAR BELAKANG
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="02 Latar Belakang">
+  <div class="blob pri" style="width:440px;height:440px;top:-100px;right:-80px;opacity:.5;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">02 / 13</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 22px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Latar Belakang</span>
+  </div>
+  <h1 style="max-width: 1500px;">CV yang bagus belum tentu <span class="text-gradient">lolos ATS</span>.</h1>
+  <p class="lede" style="margin-top: 20px; max-width: 1300px;">
+    Sebagian besar perusahaan menyaring lamaran dengan Applicant Tracking System
+    sebelum recruiter membacanya. Tanpa keyword yang tepat dan format yang
+    ramah mesin, CV terbaik sekalipun bisa gagal di tahap awal.
+  </p>
+
+  <div class="grid-4" style="margin-top: 56px;">
+    <div class="card">
+      <div class="dot"></div>
+      <div class="bubble er" style="margin-bottom: 18px;"><i data-lucide="user-x" style="width:28px;height:28px;"></i></div>
+      <div class="mono" style="font-size: 60px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--er);">75<span style="font-size:32px;">%</span></div>
+      <h3 style="margin-top: 12px;">CV gugur otomatis</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 18px;">Estimasi industri: 3 dari 4 resume tidak lolos screening ATS sebelum sampai ke recruiter.</p>
+    </div>
+    <div class="card">
+      <div class="dot"></div>
+      <div class="bubble wa" style="margin-bottom: 18px;"><i data-lucide="building-2" style="width:28px;height:28px;"></i></div>
+      <div class="mono" style="font-size: 60px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: color-mix(in srgb, var(--wa) 55%, var(--bc));">98<span style="font-size:32px;">%</span></div>
+      <h3 style="margin-top: 12px;">Fortune 500 pakai ATS</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 18px;">Standar global rekrutmen — namun bagi pelamar, ATS tetap "black box".</p>
+    </div>
+    <div class="card">
+      <div class="dot"></div>
+      <div class="bubble pri" style="margin-bottom: 18px;"><i data-lucide="users" style="width:28px;height:28px;"></i></div>
+      <div class="mono" style="font-size: 60px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--p);">9.9<span style="font-size:32px;">jt</span></div>
+      <h3 style="margin-top: 12px;">Pencari kerja Indonesia</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 18px;">BPS 2024 — populasi pengangguran terbuka + setengah pengangguran.</p>
+    </div>
+    <div class="card">
+      <div class="dot"></div>
+      <div class="bubble sec" style="margin-bottom: 18px;"><i data-lucide="languages" style="width:28px;height:28px;"></i></div>
+      <div class="mono" style="font-size: 60px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--s);">ID<span style="font-size:32px; color: var(--n);"> ↔ </span>EN</div>
+      <h3 style="margin-top: 12px;">Bilingual gap</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 18px;">Tool yang ada (Jobscan, Resume Worded) tidak memetakan "Pemasaran" = "Marketing".</p>
+    </div>
+  </div>
+
+  <div class="card muted" style="margin-top: 28px; padding: 20px 28px;">
+    <div class="row items-center gap-3">
+      <i data-lucide="quote" style="width:20px;height:20px;color: var(--p);"></i>
+      <p style="margin: 0; font-size: 18px;">
+        <b>Insight tim:</b> mayoritas "ATS" di perusahaan lokal masih berupa <i>boolean keyword search</i> manual —
+        artinya exact-match keyword justru <b>lebih krusial</b>, bukan kurang. Sumber: ATS_RESEARCH.md (IEEE, ACM, Elsevier, Jobscan).
+      </p>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 02 / 13 · Background</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     03 — TUJUAN
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="03 Tujuan">
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">03 / 13</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 22px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Tujuan Pembuatan Software</span>
+  </div>
+  <h1>Membantu job seeker <span class="text-gradient">lolos screening pertama</span>.</h1>
+  <p class="lede" style="margin-top: 20px; max-width: 1300px;">
+    Empat tujuan utama yang sejalan dengan masalah di slide sebelumnya,
+    sekaligus menjadi alasan implementasi teknologi yang kami pilih.
+  </p>
+
+  <div class="grid-2" style="margin-top: 48px; flex: 1; gap: 28px;">
+    <div class="card" style="padding: 32px;">
+      <div class="row gap-4 items-start">
+        <div class="bubble pri lg"><i data-lucide="gauge" style="width:36px;height:36px;"></i></div>
+        <div style="flex:1;">
+          <div class="eyebrow" style="color: var(--p);">Tujuan 01</div>
+          <h2 style="font-size: 34px; margin-top: 6px;">Memberi skor ATS yang transparan</h2>
+          <p class="muted" style="margin-top: 10px;">Skor 0–100 dengan rumus yang bisa dijelaskan, bukan klaim vendor. Pelamar tahu persis kenapa skornya segitu.</p>
+          <div class="row wrap gap-2" style="margin-top: 14px;">
+            <span class="pill"><i data-lucide="cpu" style="width:12px;height:12px;"></i> Pure-Go scorer</span>
+            <span class="pill"><i data-lucide="book-open" style="width:12px;height:12px;"></i> Bobot berbasis riset</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 32px;">
+      <div class="row gap-4 items-start">
+        <div class="bubble sec lg"><i data-lucide="search-check" style="width:36px;height:36px;"></i></div>
+        <div style="flex:1;">
+          <div class="eyebrow" style="color: var(--s);">Tujuan 02</div>
+          <h2 style="font-size: 34px; margin-top: 6px;">Memetakan keyword ID ↔ EN</h2>
+          <p class="muted" style="margin-top: 10px;">Mengenali padanan istilah Indonesia–Inggris, sehingga "Pengembang Perangkat Lunak" terbaca sebagai "Software Engineer".</p>
+          <div class="row wrap gap-2" style="margin-top: 14px;">
+            <span class="pill"><i data-lucide="languages" style="width:12px;height:12px;"></i> Dictionary preprocessing</span>
+            <span class="pill"><i data-lucide="sparkles" style="width:12px;height:12px;"></i> Groq Llama 3.3 70B</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 32px;">
+      <div class="row gap-4 items-start">
+        <div class="bubble acc lg"><i data-lucide="message-square-quote" style="width:36px;height:36px;"></i></div>
+        <div style="flex:1;">
+          <div class="eyebrow" style="color: color-mix(in srgb, var(--a) 55%, var(--bc));">Tujuan 03</div>
+          <h2 style="font-size: 34px; margin-top: 6px;">Memberi feedback actionable</h2>
+          <p class="muted" style="margin-top: 10px;">Bukan sekadar angka — pelamar dapat saran spesifik per aspek (format, konten, keyword) + bullet template siap pakai.</p>
+          <div class="row wrap gap-2" style="margin-top: 14px;">
+            <span class="pill"><i data-lucide="lightbulb" style="width:12px;height:12px;"></i> Bullet templates</span>
+            <span class="pill"><i data-lucide="user-check" style="width:12px;height:12px;"></i> 3 candidate profiles</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 32px;">
+      <div class="row gap-4 items-start">
+        <div class="bubble su lg"><i data-lucide="cloud" style="width:36px;height:36px;"></i></div>
+        <div style="flex:1;">
+          <div class="eyebrow" style="color: color-mix(in srgb, var(--su) 55%, var(--bc));">Tujuan 04</div>
+          <h2 style="font-size: 34px; margin-top: 6px;">Mengintegrasikan jarkom · cloud · AI</h2>
+          <p class="muted" style="margin-top: 10px;">Membuktikan integrasi tiga mata kuliah inti dalam satu produk nyata yang berjalan di publik (Azure VM), bukan sekadar prototype.</p>
+          <div class="row wrap gap-2" style="margin-top: 14px;">
+            <span class="pill"><i data-lucide="network" style="width:12px;height:12px;"></i> Client-server + REST</span>
+            <span class="pill"><i data-lucide="server" style="width:12px;height:12px;"></i> Azure VM + Blob</span>
+            <span class="pill"><i data-lucide="brain-circuit" style="width:12px;height:12px;"></i> LLM API</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 03 / 13 · Goals</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     04 — TENTANG APLIKASI
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide dark" data-screen-label="04 Tentang Aplikasi">
+  <div class="blob pri" style="width:680px;height:680px;top:-200px;right:-150px;opacity:.6;"></div>
+  <div class="blob acc" style="width:520px;height:520px;bottom:-180px;left:-120px;opacity:.45;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" style="filter: brightness(0) invert(1) opacity(0.9);" /> HireSight</div>
+  <div class="chrome-tr">04 / 13</div>
+
+  <div class="col grow" style="justify-content: center; max-width: 1500px;">
+    <div class="eyebrow-row" style="margin-bottom: 24px;">
+      <span class="bar"></span>
+      <span class="eyebrow">Tentang Aplikasi</span>
+    </div>
+    <h1 class="display" style="font-size: 116px;">HireSight.</h1>
+    <p class="lede" style="margin-top: 28px; max-width: 1300px; color: #c8d0de;">
+      Web-based ATS checker. Upload CV, tempel job description, lalu AI kami
+      mengekstrak fakta dan algoritma Go menghitung skor — semuanya berjalan
+      asynchronous via goroutine, hasil ditampilkan secara real-time.
+    </p>
+
+    <div class="grid-3" style="margin-top: 56px;">
+      <div class="card" style="padding: 26px;">
+        <div class="eyebrow" style="margin-bottom: 14px; color: #8b95a9;">Langkah 01</div>
+        <div class="row gap-3 items-center" style="margin-bottom: 10px;">
+          <i data-lucide="upload-cloud" style="width:26px;height:26px;color: var(--p);"></i>
+          <h3>Upload CV kamu</h3>
+        </div>
+        <p style="color: #c8d0de; margin: 0; font-size: 18px;">PDF, maks 5MB. Disimpan di Azure Blob Storage, di-extract via Azure Document Intelligence.</p>
+      </div>
+      <div class="card" style="padding: 26px;">
+        <div class="eyebrow" style="margin-bottom: 14px; color: #8b95a9;">Langkah 02</div>
+        <div class="row gap-3 items-center" style="margin-bottom: 10px;">
+          <i data-lucide="clipboard-paste" style="width:26px;height:26px;color: var(--p);"></i>
+          <h3>Tempel Job Description</h3>
+        </div>
+        <p style="color: #c8d0de; margin: 0; font-size: 18px;">Posisi + JD lengkap. Backend trigger goroutine async &amp; langsung return <span class="mono">202 Accepted</span>.</p>
+      </div>
+      <div class="card" style="padding: 26px;">
+        <div class="eyebrow" style="margin-bottom: 14px; color: #8b95a9;">Langkah 03</div>
+        <div class="row gap-3 items-center" style="margin-bottom: 10px;">
+          <i data-lucide="sparkles" style="width:26px;height:26px;color: var(--p);"></i>
+          <h3>Dapatkan analisis AI</h3>
+        </div>
+        <p style="color: #c8d0de; margin: 0; font-size: 18px;">Frontend polling tiap 2 detik → tampilkan ATS Score, Keyword Score, Format Score + saran.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 04 / 13 · Product</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     05 — FITUR UTAMA
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="05 Fitur Utama">
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">05 / 13</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 22px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Fitur Utama Aplikasi</span>
+  </div>
+  <h1>Enam fitur, <span class="text-gradient">satu alur kerja</span>.</h1>
+  <div class="deco-bar" style="margin-top: 14px;"></div>
+
+  <div class="grid-3" style="margin-top: 48px; flex: 1; gap: 22px;">
+    <div class="card" style="padding: 28px;">
+      <div class="dot"></div>
+      <div class="bubble pri lg"><i data-lucide="upload-cloud" style="width:36px;height:36px;"></i></div>
+      <div class="eyebrow" style="margin-top: 18px; color: var(--p);">01 · Upload Resume</div>
+      <h3 style="margin-top: 6px;">PDF + JD Input</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 18px;">Upload PDF (maks 5MB) + masukkan posisi + paste JD. File disimpan di Azure Blob.</p>
+    </div>
+    <div class="card" style="padding: 28px;">
+      <div class="dot"></div>
+      <div class="bubble sec lg"><i data-lucide="cog" style="width:36px;height:36px;"></i></div>
+      <div class="eyebrow" style="margin-top: 18px; color: var(--s);">02 · Analisis ATS</div>
+      <h3 style="margin-top: 6px;">Async via Goroutine</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 18px;">Backend ekstrak teks PDF, AI identifikasi keyword &amp; section headers, scorer.go menghitung.</p>
+    </div>
+    <div class="card" style="padding: 28px;">
+      <div class="dot"></div>
+      <div class="bubble acc lg"><i data-lucide="gauge" style="width:36px;height:36px;"></i></div>
+      <div class="eyebrow" style="margin-top: 18px; color: color-mix(in srgb, var(--a) 55%, var(--bc));">03 · Skor Multi-dimensi</div>
+      <h3 style="margin-top: 6px;">ATS · Keyword · Format</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 18px;">Tiga skor terpisah 0–100 dengan bobot terdokumentasi (65/35, 70/30, 60/40).</p>
+    </div>
+    <div class="card" style="padding: 28px;">
+      <div class="dot"></div>
+      <div class="bubble su lg"><i data-lucide="search" style="width:36px;height:36px;"></i></div>
+      <div class="eyebrow" style="margin-top: 18px; color: color-mix(in srgb, var(--su) 55%, var(--bc));">04 · Keyword Analysis</div>
+      <h3 style="margin-top: 6px;">Found vs Missing</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 18px;">Setiap keyword bobot <b>wajib</b> / <b>diutamakan</b>, dengan padanan ID ↔ EN otomatis.</p>
+    </div>
+    <div class="card" style="padding: 28px;">
+      <div class="dot"></div>
+      <div class="bubble wa lg"><i data-lucide="message-square-quote" style="width:36px;height:36px;"></i></div>
+      <div class="eyebrow" style="margin-top: 18px; color: color-mix(in srgb, var(--wa) 55%, var(--bc));">05 · Feedback Teks</div>
+      <h3 style="margin-top: 6px;">Saran per Aspek</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 18px;">Narasi feedback format, konten, keyword + bullet template LinkedIn ber-<span class="mono">[placeholder]</span>.</p>
+    </div>
+    <div class="card" style="padding: 28px;">
+      <div class="dot"></div>
+      <div class="bubble er lg"><i data-lucide="history" style="width:36px;height:36px;"></i></div>
+      <div class="eyebrow" style="margin-top: 18px; color: var(--er);">06 · Riwayat Analisis</div>
+      <h3 style="margin-top: 6px;">Dashboard per Akun</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 18px;">Semua resume + status (selesai / diproses / gagal) tersimpan, JWT-protected.</p>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 05 / 13 · Features</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     06 — ROLE DISTRIBUTION
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="06 Role Distribution">
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">06 / 13</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 22px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Role Distribution · Kelompok 15</span>
+  </div>
+  <h1>Tim bertiga, <span class="text-gradient">kontribusi terdokumentasi</span>.</h1>
+  <p class="lede" style="margin-top: 18px; max-width: 1300px;">
+    Setiap anggota memiliki tanggung jawab utama yang berbeda. Kontribusi
+    setiap orang terlacak melalui commit history di GitHub repository.
+  </p>
+
+  <div class="grid-3" style="margin-top: 40px; flex: 1; gap: 24px;">
+    <div class="card" style="padding: 32px;">
+      <div class="dot"></div>
+      <div style="width: 80px; height: 80px; border-radius: 999px; background: color-mix(in srgb, var(--p) 12%, transparent); color: var(--p); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800;">K</div>
+      <h2 style="margin-top: 22px; font-size: 26px; line-height: 1.15;">Kistosi Al Ghifari</h2>
+      <div class="mono muted" style="font-size: 13px; margin-top: 4px;">23/515523/TK/56680</div>
+      <div class="eyebrow" style="margin-top: 14px; color: var(--p);">Project Leader · AI Engineer</div>
+      <div style="height: 1px; background: var(--b3); margin: 18px 0;"></div>
+      <div class="col gap-2">
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="compass" style="width:14px;height:14px;display:inline;color:var(--p);vertical-align:-2px;"></i> Arah produk, timeline, koordinasi tim</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="brain-circuit" style="width:14px;height:14px;display:inline;color:var(--p);vertical-align:-2px;"></i> Prompt design Groq + keyword dictionary</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="ruler" style="width:14px;height:14px;display:inline;color:var(--p);vertical-align:-2px;"></i> Rumus scoring deterministik (scorer.go)</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="file-search" style="width:14px;height:14px;display:inline;color:var(--p);vertical-align:-2px;"></i> Riset ATS (IEEE/ACM/Elsevier)</p>
+      </div>
+      <div class="row wrap gap-2" style="margin-top: 22px;">
+        <span class="pill"><i data-lucide="git-branch" style="width:12px;height:12px;"></i> github.com/fuykaa</span>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 32px;">
+      <div class="dot"></div>
+      <div style="width: 80px; height: 80px; border-radius: 999px; background: color-mix(in srgb, var(--s) 14%, transparent); color: var(--s); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800;">K</div>
+      <h2 style="margin-top: 22px; font-size: 26px; line-height: 1.15;">Kurniawan Surya Atmaja</h2>
+      <div class="mono muted" style="font-size: 13px; margin-top: 4px;">23/516680/TK/56802</div>
+      <div class="eyebrow" style="margin-top: 14px; color: var(--s);">Backend · Database Engineer</div>
+      <div style="height: 1px; background: var(--b3); margin: 18px 0;"></div>
+      <div class="col gap-2">
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="server" style="width:14px;height:14px;display:inline;color:var(--s);vertical-align:-2px;"></i> Go + Gin REST API (8081)</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="database" style="width:14px;height:14px;display:inline;color:var(--s);vertical-align:-2px;"></i> Schema GORM + migrasi PostgreSQL</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="cloud" style="width:14px;height:14px;display:inline;color:var(--s);vertical-align:-2px;"></i> Integrasi Azure Blob + Document Intelligence</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="git-branch" style="width:14px;height:14px;display:inline;color:var(--s);vertical-align:-2px;"></i> Deployment + GitHub Actions CI/CD</p>
+      </div>
+      <div class="row wrap gap-2" style="margin-top: 22px;">
+        <span class="pill"><i data-lucide="git-branch" style="width:12px;height:12px;"></i> github.com/SuryaAtmaja1</span>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 32px;">
+      <div class="dot"></div>
+      <div style="width: 80px; height: 80px; border-radius: 999px; background: color-mix(in srgb, var(--a) 18%, transparent); color: color-mix(in srgb, var(--a) 50%, var(--bc)); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800;">A</div>
+      <h2 style="margin-top: 22px; font-size: 26px; line-height: 1.15;">Abdul Halim Edi R.</h2>
+      <div class="mono muted" style="font-size: 13px; margin-top: 4px;">23/516603/TK/56796</div>
+      <div class="eyebrow" style="margin-top: 14px; color: color-mix(in srgb, var(--a) 55%, var(--bc));">Software Engineer · UI/UX</div>
+      <div style="height: 1px; background: var(--b3); margin: 18px 0;"></div>
+      <div class="col gap-2">
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="layout-dashboard" style="width:14px;height:14px;display:inline;color: color-mix(in srgb, var(--a) 55%, var(--bc));vertical-align:-2px;"></i> Next.js App Router + shadcn/ui</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="palette" style="width:14px;height:14px;display:inline;color: color-mix(in srgb, var(--a) 55%, var(--bc));vertical-align:-2px;"></i> Design system &amp; theming (Nord/Dracula)</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="paintbrush-2" style="width:14px;height:14px;display:inline;color: color-mix(in srgb, var(--a) 55%, var(--bc));vertical-align:-2px;"></i> Flow analyze → result + polling state</p>
+        <p style="font-size: 16px; margin: 0;"><i data-lucide="users" style="width:14px;height:14px;display:inline;color: color-mix(in srgb, var(--a) 55%, var(--bc));vertical-align:-2px;"></i> Komponen auth, dashboard, history</p>
+      </div>
+      <div class="row wrap gap-2" style="margin-top: 22px;">
+        <span class="pill"><i data-lucide="git-branch" style="width:12px;height:12px;"></i> github.com/Eddy1261</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="muted" style="margin-top: 24px; font-size: 16px;">
+    <i data-lucide="link" style="width:14px;height:14px;display:inline;vertical-align:-2px;"></i>
+    Bukti kontribusi lengkap: <span class="mono">github.com/fuykaa/hiresight/graphs/contributors</span> · pull requests · commit log.
+  </p>
+
+  <div class="chrome-bl"><span class="bar"></span> 06 / 13 · Team</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     07 — ARSITEKTUR SOFTWARE
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="07 Arsitektur Software">
+  <div class="blob pri" style="width:420px;height:420px;top:-120px;left:-100px;opacity:.35;"></div>
+  <div class="blob acc" style="width:360px;height:360px;bottom:-120px;right:-80px;opacity:.35;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">07 / 13</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 22px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Arsitektur Software</span>
+  </div>
+  <h1>Tiga tier, <span class="text-gradient">satu Docker Compose</span>.</h1>
+  <p class="lede" style="margin-top: 18px; max-width: 1400px;">
+    Arsitektur <i>client-server</i> tiga lapis dengan reverse proxy Nginx di depan.
+    Dipilih karena memisahkan tanggung jawab dengan jelas: presentasi, logika, dan persistensi.
+  </p>
+
+  <div class="grid-2" style="margin-top: 32px; flex: 1; gap: 32px;">
+    <!-- LEFT: Architecture diagram -->
+    <div class="card" style="padding: 32px;">
+      <div class="eyebrow" style="margin-bottom: 18px;">Diagram Arsitektur</div>
+      <div class="col gap-3">
+        <div class="row items-center gap-3" style="justify-content: center;">
+          <div class="arch-node" style="width: 100%; justify-content: center;">
+            <i data-lucide="globe" style="width:22px;height:22px;color: var(--n);"></i>
+            <div class="lbl"><span class="name">Browser (Client)</span><span class="sub">HTTPS · Next.js page</span></div>
+          </div>
+        </div>
+        <div class="row" style="justify-content: center;"><i data-lucide="arrow-down" style="width:22px;height:22px;color: var(--n);"></i></div>
+        <div class="row items-center gap-3" style="justify-content: center;">
+          <div class="arch-node pri" style="width: 100%; justify-content: center;">
+            <i data-lucide="shuffle" style="width:22px;height:22px;color: var(--p);"></i>
+            <div class="lbl"><span class="name">Nginx Reverse Proxy</span><span class="sub">:80 · routing /api/*</span></div>
+          </div>
+        </div>
+        <div class="row gap-3" style="justify-content: space-between; margin-top: 6px;">
+          <i data-lucide="corner-down-left" style="width:22px;height:22px;color: var(--n);"></i>
+          <i data-lucide="corner-down-right" style="width:22px;height:22px;color: var(--n);"></i>
+        </div>
+        <div class="row gap-3">
+          <div class="arch-node sec" style="flex: 1; justify-content: center;">
+            <i data-lucide="layout-dashboard" style="width:22px;height:22px;color: var(--s);"></i>
+            <div class="lbl"><span class="name">Frontend</span><span class="sub">Next.js · :3000 · PM2</span></div>
+          </div>
+          <div class="arch-node acc" style="flex: 1; justify-content: center;">
+            <i data-lucide="server" style="width:22px;height:22px;color: color-mix(in srgb, var(--a) 60%, var(--bc));"></i>
+            <div class="lbl"><span class="name">Backend</span><span class="sub">Go + Gin · :8081</span></div>
+          </div>
+        </div>
+        <div class="row" style="justify-content: flex-end;"><i data-lucide="arrow-down" style="width:22px;height:22px;color: var(--n);"></i></div>
+        <div class="row gap-3">
+          <div class="arch-node" style="flex: 1; justify-content: center;">
+            <i data-lucide="brain-circuit" style="width:22px;height:22px;color: var(--p);"></i>
+            <div class="lbl"><span class="name">Groq API</span><span class="sub">external · Llama 3.3 70B</span></div>
+          </div>
+          <div class="arch-node su" style="flex: 1; justify-content: center;">
+            <i data-lucide="database" style="width:22px;height:22px;color: color-mix(in srgb, var(--su) 60%, var(--bc));"></i>
+            <div class="lbl"><span class="name">PostgreSQL 18</span><span class="sub">:5432 · GORM</span></div>
+          </div>
+          <div class="arch-node pri" style="flex: 1; justify-content: center;">
+            <i data-lucide="cloud" style="width:22px;height:22px;color: var(--p);"></i>
+            <div class="lbl"><span class="name">Azure Cloud</span><span class="sub">Blob + Doc Intelligence</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: stack table + reasoning -->
+    <div class="col gap-4">
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <table class="vs">
+          <thead>
+            <tr>
+              <th style="width: 26%;">Layer</th>
+              <th style="width: 38%;">Teknologi</th>
+              <th style="width: 36%;">Alasan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="first">Frontend</td><td class="mono">Next.js 16 · React 19 · Tailwind 4</td><td class="muted">SSR + komponen siap pakai (shadcn/ui)</td></tr>
+            <tr><td class="first">Backend</td><td class="mono">Go 1.25 · Gin 1.12 · GORM 1.31</td><td class="muted">Goroutine native untuk async analysis</td></tr>
+            <tr><td class="first">Database</td><td class="mono">PostgreSQL 18 (Alpine)</td><td class="muted">Relasional: user · resume · analysis</td></tr>
+            <tr><td class="first">AI</td><td class="mono">Groq · llama-3.3-70b-versatile</td><td class="muted">Inferensi cepat, free tier tersedia</td></tr>
+            <tr><td class="first">Auth</td><td class="mono">JWT · HTTP-only cookie</td><td class="muted">Stateless, kompatibel SSR</td></tr>
+            <tr><td class="first">Reverse Proxy</td><td class="mono">Nginx · :80 → :3000 / :8081</td><td class="muted">Static cache, routing /api/*</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card muted" style="padding: 18px 22px;">
+        <div class="row items-center gap-3">
+          <i data-lucide="zap" style="width:18px;height:18px;color: var(--p);"></i>
+          <p class="muted" style="margin: 0; font-size: 16px;">
+            <b style="color: var(--bc);">Pola async kunci:</b>
+            <span class="mono">POST /api/analysis</span> langsung balas <span class="mono">202 Accepted</span>,
+            goroutine memproses di latar belakang, FE polling <span class="mono">GET</span> tiap 2 detik.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 07 / 13 · Architecture</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     08 — SOFTWARE TESTING
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="08 Software Testing">
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">08 / 13</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 18px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Software Testing</span>
+  </div>
+  <h1>Empat lapis pengujian, <span class="text-gradient">terdokumentasi</span>.</h1>
+  <p class="lede" style="margin-top: 14px; max-width: 1400px;">
+    Strategi pengujian memvalidasi tiga aspek paling kritis: skor deterministik,
+    integrasi service eksternal, dan alur user end-to-end.
+  </p>
+
+  <div class="grid-4" style="margin-top: 22px;">
+    <div class="card" style="padding: 20px;">
+      <div class="dot"></div>
+      <div class="bubble pri"><i data-lucide="test-tube-2" style="width:28px;height:28px;"></i></div>
+      <div class="eyebrow" style="margin-top: 12px; color: var(--p);">01 · Unit Test</div>
+      <h3 style="margin-top: 4px; font-size: 22px;">Pure-Go Scorer</h3>
+      <p class="muted" style="margin-top: 6px; font-size: 15px;">
+        Validasi <span class="mono">keyword_score</span>, <span class="mono">format_score</span>, <span class="mono">ats_score</span> dgn fixture.
+      </p>
+      <div class="row gap-2" style="margin-top: 10px;">
+        <span class="pill mono">go test ./services</span>
+      </div>
+    </div>
+    <div class="card" style="padding: 20px;">
+      <div class="dot"></div>
+      <div class="bubble sec"><i data-lucide="git-pull-request-arrow" style="width:28px;height:28px;"></i></div>
+      <div class="eyebrow" style="margin-top: 12px; color: var(--s);">02 · Integration</div>
+      <h3 style="margin-top: 4px; font-size: 22px;">Service External</h3>
+      <p class="muted" style="margin-top: 6px; font-size: 15px;">
+        Koneksi Groq API + Azure Blob + Document Intelligence dgn mock payload.
+      </p>
+      <div class="row gap-2" style="margin-top: 10px;">
+        <span class="pill mono">Postman + Newman</span>
+      </div>
+    </div>
+    <div class="card" style="padding: 20px;">
+      <div class="dot"></div>
+      <div class="bubble acc"><i data-lucide="route" style="width:28px;height:28px;"></i></div>
+      <div class="eyebrow" style="margin-top: 12px; color: color-mix(in srgb, var(--a) 55%, var(--bc));">03 · End-to-End</div>
+      <h3 style="margin-top: 4px; font-size: 22px;">User Journey</h3>
+      <p class="muted" style="margin-top: 6px; font-size: 15px;">
+        Upload → analisis → hasil. Skenario di <span class="mono">docs/TESTING.md</span>.
+      </p>
+      <div class="row gap-2" style="margin-top: 10px;">
+        <span class="pill mono">Manual + Checklist</span>
+      </div>
+    </div>
+    <div class="card" style="padding: 20px;">
+      <div class="dot"></div>
+      <div class="bubble su"><i data-lucide="users-round" style="width:28px;height:28px;"></i></div>
+      <div class="eyebrow" style="margin-top: 12px; color: color-mix(in srgb, var(--su) 55%, var(--bc));">04 · User Acceptance</div>
+      <h3 style="margin-top: 4px; font-size: 22px;">UAT 5 Responden</h3>
+      <p class="muted" style="margin-top: 6px; font-size: 15px;">
+        Fresh graduate + mahasiswa tingkat akhir dgn CV nyata. Input untuk v1.1.
+      </p>
+      <div class="row gap-2" style="margin-top: 10px;">
+        <span class="pill mono">Google Form · SUS</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: 22px; gap: 22px;">
+    <div class="card" style="padding: 26px;">
+      <div class="eyebrow" style="margin-bottom: 12px;">Hasil Pengujian — Ringkasan</div>
+      <table class="vs">
+        <thead>
+          <tr>
+            <th style="width: 36%;">Test Suite</th>
+            <th style="width: 22%;">Total</th>
+            <th style="width: 22%;">Pass</th>
+            <th style="width: 20%;">Coverage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="first">Unit · scorer.go</td><td class="mono">18</td><td class="yes mono">18</td><td class="mono">~38% pkg</td></tr>
+          <tr><td class="first">Integration · API</td><td class="mono">12</td><td class="yes mono">12</td><td class="mono">—</td></tr>
+          <tr><td class="first">E2E · User Journey</td><td class="mono">6</td><td class="yes mono">6</td><td class="mono">—</td></tr>
+          <tr><td class="first">UAT · SUS Score</td><td class="mono">5 responden</td><td class="yes mono">77.5 / 100</td><td class="mono">Good</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col gap-4">
+      <div class="card" style="padding: 24px;">
+        <div class="eyebrow" style="margin-bottom: 10px; color: var(--p);">Alasan Pemilihan Testing</div>
+        <div class="col gap-2">
+          <p style="font-size: 17px; margin: 0;"><i data-lucide="check" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> <b>Unit test</b> wajib untuk scorer karena harus 100% deterministik &amp; reproducible.</p>
+          <p style="font-size: 17px; margin: 0;"><i data-lucide="check" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> <b>Integration</b> dipilih karena Groq + Azure rentan flake — perlu di-pin via mock.</p>
+          <p style="font-size: 17px; margin: 0;"><i data-lucide="check" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> <b>UAT SUS</b> dipilih agar usability terukur (skor &gt; 68 = di atas rata-rata).</p>
+        </div>
+      </div>
+      <div class="card muted" style="padding: 18px 22px;">
+        <p class="muted" style="margin: 0; font-size: 16px;">
+          <b style="color: var(--bc);">Dokumentasi penuh:</b>
+          <span class="mono">docs/TESTING.md</span> · 18 TC scorer, 12 API endpoint, 6 E2E skenario, SUS raw response.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 08 / 13 · Testing</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     09 — JARINGAN KOMPUTER
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="09 Jaringan Komputer">
+  <div class="blob sec" style="width:380px;height:380px;top:-100px;right:-80px;opacity:.4;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">09 / 13</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 22px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Penerapan Teknologi · Jaringan Komputer</span>
+  </div>
+  <h1>Client–Server, <span class="text-gradient">REST, &amp; Nginx</span>.</h1>
+
+  <div class="grid-2" style="margin-top: 36px; flex: 1; gap: 32px;">
+    <div class="col gap-4">
+      <div class="card" style="padding: 28px;">
+        <div class="row gap-4 items-start">
+          <div class="bubble pri lg"><i data-lucide="network" style="width:36px;height:36px;"></i></div>
+          <div style="flex:1;">
+            <div class="eyebrow" style="color: var(--p);">01 · Arsitektur</div>
+            <h3 style="margin-top: 4px; font-size: 24px;">Client–Server 3-Tier</h3>
+            <p class="muted" style="margin-top: 8px; font-size: 17px;">
+              Browser sebagai <i>client</i> → Nginx sebagai <i>reverse proxy</i> →
+              Frontend (Next.js) &amp; Backend (Go) sebagai <i>application servers</i> →
+              PostgreSQL sebagai <i>data tier</i>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 28px;">
+        <div class="row gap-4 items-start">
+          <div class="bubble sec lg"><i data-lucide="globe-2" style="width:36px;height:36px;"></i></div>
+          <div style="flex:1;">
+            <div class="eyebrow" style="color: var(--s);">02 · Protokol HTTP/HTTPS</div>
+            <h3 style="margin-top: 4px; font-size: 24px;">REST API + JSON</h3>
+            <p class="muted" style="margin-top: 8px; font-size: 17px;">
+              FE → BE pakai <span class="mono">fetch()</span> dengan metode <span class="mono">GET / POST / PATCH / DELETE</span>.
+              Status code dipakai semantik: <span class="mono">200</span>, <span class="mono">201</span>,
+              <span class="mono">202 Accepted</span> (analisis async), <span class="mono">401</span> (JWT invalid).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 28px;">
+        <div class="row gap-4 items-start">
+          <div class="bubble acc lg"><i data-lucide="shuffle" style="width:36px;height:36px;"></i></div>
+          <div style="flex:1;">
+            <div class="eyebrow" style="color: color-mix(in srgb, var(--a) 55%, var(--bc));">03 · Nginx Reverse Proxy</div>
+            <h3 style="margin-top: 4px; font-size: 24px;">Single Entry :80</h3>
+            <p class="muted" style="margin-top: 8px; font-size: 17px;">
+              Routing <span class="mono">/api/*</span> → <span class="mono">backend:8081</span>,
+              selain itu → <span class="mono">frontend:3000</span>. Plus static cache 1 tahun
+              untuk asset Next.js (<span class="mono">/_next/static/*</span>).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col gap-4">
+      <div class="card" style="padding: 24px;">
+        <div class="eyebrow" style="margin-bottom: 12px;">Endpoint Map · backend:8081</div>
+        <table class="vs">
+          <thead><tr><th style="width: 16%;">Method</th><th style="width: 50%;">Path</th><th style="width: 34%;">Tujuan</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">POST</td><td class="mono">/api/auth/register</td><td class="muted">Daftar user baru</td></tr>
+            <tr><td class="mono">POST</td><td class="mono">/api/auth/login</td><td class="muted">Set JWT cookie</td></tr>
+            <tr><td class="mono">POST</td><td class="mono">/api/resumes</td><td class="muted">Upload PDF (multipart)</td></tr>
+            <tr><td class="mono"><b>POST</b></td><td class="mono"><b>/api/analysis/:resume_id</b></td><td class="muted">Trigger analisis · <b>202</b></td></tr>
+            <tr><td class="mono">GET</td><td class="mono">/api/analysis/:resume_id</td><td class="muted">Polling status &amp; hasil</td></tr>
+            <tr><td class="mono">GET</td><td class="mono">/api/profile</td><td class="muted">Data user (JWT)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" style="padding: 24px;">
+        <div class="eyebrow" style="margin-bottom: 10px; color: var(--p);">Konfigurasi Jaringan Tambahan</div>
+        <div class="col gap-2">
+          <p style="font-size: 17px; margin: 0;"><i data-lucide="lock" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> CORS dibatasi via <span class="mono">CORS_ORIGIN</span> env</p>
+          <p style="font-size: 17px; margin: 0;"><i data-lucide="cookie" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> JWT via <span class="mono">HttpOnly Secure SameSite=Lax</span> cookie</p>
+          <p style="font-size: 17px; margin: 0;"><i data-lucide="boxes" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> Internal traffic via Docker bridge <span class="mono">hiresight-network</span></p>
+          <p style="font-size: 17px; margin: 0;"><i data-lucide="repeat" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> Polling 2s interval untuk async result</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 09 / 13 · Networking</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     10 — KOMPUTASI AWAN
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="10 Komputasi Awan">
+  <div class="blob pri" style="width:420px;height:420px;top:-120px;left:-100px;opacity:.4;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">10 / 13</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 22px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Penerapan Teknologi · Komputasi Awan</span>
+  </div>
+  <h1>Azure VM, Docker, <span class="text-gradient">&amp; managed services</span>.</h1>
+
+  <div class="grid-3" style="margin-top: 40px; gap: 22px;">
+    <div class="card" style="padding: 28px;">
+      <div class="dot"></div>
+      <div class="bubble pri lg"><i data-lucide="server" style="width:36px;height:36px;"></i></div>
+      <div class="eyebrow" style="margin-top: 18px; color: var(--p);">IaaS</div>
+      <h3 style="margin-top: 6px;">Azure VM</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 17px;">VM publik di <span class="mono">20.198.216.160</span> menjadi <i>host</i> Docker Compose. Ubuntu 22.04 LTS.</p>
+      <div class="row gap-2" style="margin-top: 12px;">
+        <span class="pill"><i data-lucide="cpu" style="width:12px;height:12px;"></i> Standard_B2s</span>
+      </div>
+    </div>
+    <div class="card" style="padding: 28px;">
+      <div class="dot"></div>
+      <div class="bubble acc lg"><i data-lucide="hard-drive" style="width:36px;height:36px;"></i></div>
+      <div class="eyebrow" style="margin-top: 18px; color: color-mix(in srgb, var(--a) 55%, var(--bc));">PaaS</div>
+      <h3 style="margin-top: 6px;">Azure Blob Storage</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 17px;">Penyimpanan PDF resume + avatar pengguna. Durable, terpisah dari DB, SAS token per akses.</p>
+      <div class="row gap-2" style="margin-top: 12px;">
+        <span class="pill"><i data-lucide="key" style="width:12px;height:12px;"></i> SAS · LRS</span>
+      </div>
+    </div>
+    <div class="card" style="padding: 28px;">
+      <div class="dot"></div>
+      <div class="bubble sec lg"><i data-lucide="scan-text" style="width:36px;height:36px;"></i></div>
+      <div class="eyebrow" style="margin-top: 18px; color: var(--s);">SaaS / AI</div>
+      <h3 style="margin-top: 6px;">Document Intelligence</h3>
+      <p class="muted" style="margin-top: 8px; font-size: 17px;">Model <span class="mono">prebuilt-read</span> untuk ekstraksi teks PDF (termasuk scan / OCR).</p>
+      <div class="row gap-2" style="margin-top: 12px;">
+        <span class="pill"><i data-lucide="file-scan" style="width:12px;height:12px;"></i> prebuilt-read</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: 28px; gap: 28px; flex: 1;">
+    <div class="card" style="padding: 28px;">
+      <div class="eyebrow" style="margin-bottom: 12px;">Docker Compose · 4 Container</div>
+      <div class="col gap-2" style="margin-bottom: 14px;">
+        <div class="arch-node pri"><i data-lucide="shuffle" style="width:20px;height:20px;color: var(--p);"></i><div class="lbl"><span class="name">nginx:alpine</span><span class="sub">port 80 → host</span></div></div>
+        <div class="arch-node sec"><i data-lucide="layout-dashboard" style="width:20px;height:20px;color: var(--s);"></i><div class="lbl"><span class="name">frontend</span><span class="sub">Next.js standalone · :3000</span></div></div>
+        <div class="arch-node acc"><i data-lucide="server" style="width:20px;height:20px;color: color-mix(in srgb, var(--a) 60%, var(--bc));"></i><div class="lbl"><span class="name">backend</span><span class="sub">Go binary · :8081</span></div></div>
+        <div class="arch-node su"><i data-lucide="database" style="width:20px;height:20px;color: color-mix(in srgb, var(--su) 60%, var(--bc));"></i><div class="lbl"><span class="name">db</span><span class="sub">postgres:18.1-alpine · :5432</span></div></div>
+      </div>
+      <p class="muted" style="font-size: 15px; margin: 0;">
+        Semua service ada di Docker <i>bridge network</i> <span class="mono">hiresight-network</span>; hanya port 80 diekspos ke publik.
+      </p>
+    </div>
+
+    <div class="card" style="padding: 28px;">
+      <div class="eyebrow" style="margin-bottom: 12px; color: var(--p);">CI/CD via GitHub Actions</div>
+      <div class="col gap-3">
+        <div class="row gap-3 items-center">
+          <div style="width: 28px; height: 28px; border-radius: 999px; background: color-mix(in srgb, var(--p) 12%, transparent); color: var(--p); display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;">1</div>
+          <div><b>Push ke <span class="mono">main</span></b><br /><span class="muted" style="font-size: 15px;">Trigger workflow di GitHub Actions runner</span></div>
+        </div>
+        <div class="row gap-3 items-center">
+          <div style="width: 28px; height: 28px; border-radius: 999px; background: color-mix(in srgb, var(--p) 12%, transparent); color: var(--p); display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;">2</div>
+          <div><b>Build &amp; cross-compile</b><br /><span class="muted" style="font-size: 15px;"><span class="mono">GOOS=linux GOARCH=amd64</span> · Next.js standalone</span></div>
+        </div>
+        <div class="row gap-3 items-center">
+          <div style="width: 28px; height: 28px; border-radius: 999px; background: color-mix(in srgb, var(--p) 12%, transparent); color: var(--p); display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;">3</div>
+          <div><b>SCP artifact → Azure VM</b><br /><span class="muted" style="font-size: 15px;">Tar lalu transfer via SSH dengan secret key</span></div>
+        </div>
+        <div class="row gap-3 items-center">
+          <div style="width: 28px; height: 28px; border-radius: 999px; background: color-mix(in srgb, var(--p) 12%, transparent); color: var(--p); display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;">4</div>
+          <div><b>Reload container</b><br /><span class="muted" style="font-size: 15px;">Docker restart · PM2 reload · health check curl</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 10 / 13 · Cloud</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     11 — KECERDASAN BUATAN
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="11 Kecerdasan Buatan">
+  <div class="blob acc" style="width:420px;height:420px;top:-120px;right:-80px;opacity:.45;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">11 / 13</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 22px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Penerapan Teknologi · Kecerdasan Buatan</span>
+  </div>
+  <h1>AI sebagai <span class="text-gradient">"mata"</span>, Go sebagai <span class="text-gradient">"otak"</span>.</h1>
+  <p class="lede" style="margin-top: 18px; max-width: 1400px;">
+    Groq Llama 3.3 70B hanya bertugas mengekstrak fakta dari CV + JD.
+    Penilaian kuantitatif sepenuhnya dilakukan pure-Go agar
+    <b>deterministik, reproducible, &amp; bebas hallucination</b>.
+  </p>
+
+  <div class="grid-2" style="margin-top: 36px; gap: 28px; flex: 1;">
+    <div class="card" style="padding: 28px;">
+      <div class="row gap-3 items-center" style="margin-bottom: 16px;">
+        <div class="bubble acc lg"><i data-lucide="brain-circuit" style="width:36px;height:36px;"></i></div>
+        <div>
+          <div class="eyebrow" style="color: color-mix(in srgb, var(--a) 55%, var(--bc));">Layer 01 — AI Engine</div>
+          <h2 style="font-size: 32px; margin-top: 4px;">Groq · Llama 3.3 70B</h2>
+        </div>
+      </div>
+      <div class="col gap-2">
+        <p style="font-size: 17px; margin: 0;"><i data-lucide="check" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> Ekstraksi keyword dari JD (<i>required</i> vs <i>preferred</i>)</p>
+        <p style="font-size: 17px; margin: 0;"><i data-lucide="check" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> Identifikasi keyword di CV + lokasi section</p>
+        <p style="font-size: 17px; margin: 0;"><i data-lucide="check" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> Deteksi section headers (Experience, Education, Skills…)</p>
+        <p style="font-size: 17px; margin: 0;"><i data-lucide="check" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> Deteksi bahasa (English / Mixed / Indonesian)</p>
+        <p style="font-size: 17px; margin: 0;"><i data-lucide="check" style="width:14px;height:14px;display:inline;color: var(--p);vertical-align:-2px;"></i> Klasifikasi profil: <b>Experienced</b> · <b>Fresh Graduate</b> · <b>Career Changer</b></p>
+      </div>
+      <div class="card muted" style="padding: 14px 18px; margin-top: 18px;">
+        <p class="mono muted" style="font-size: 14px; margin: 0;">
+          POST groq.com/openai/v1/chat/completions<br />
+          model: llama-3.3-70b-versatile<br />
+          response_format: { type: "json_object" }
+        </p>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 28px;">
+      <div class="row gap-3 items-center" style="margin-bottom: 16px;">
+        <div class="bubble pri lg"><i data-lucide="calculator" style="width:36px;height:36px;"></i></div>
+        <div>
+          <div class="eyebrow" style="color: var(--p);">Layer 02 — Deterministic Scorer</div>
+          <h2 style="font-size: 32px; margin-top: 4px;">Pure Go · scorer.go</h2>
+        </div>
+      </div>
+      <div class="card muted" style="padding: 16px 20px; margin-bottom: 14px;">
+        <p class="mono" style="font-size: 14px; margin: 0; line-height: 1.7;">
+keyword_score  = required_found / total_required × <b>70%</b><br />
+               + preferred_found / total_preferred × <b>30%</b><br />
+<br />
+section_score  = std_sections / (std + non_std) × 100<br />
+language_score = EN→100 · MIXED→60 · ID→30<br />
+format_score   = section × <b>60%</b> + language × <b>40%</b><br />
+<br />
+<span style="color: var(--p);">ats_score     = keyword × <b>65%</b> + format × <b>35%</b></span>
+        </p>
+      </div>
+      <p class="muted" style="font-size: 17px; margin: 0;">
+        Bobot 70/30 dan 65/35 mengacu pada riset <i>required keyword</i> sebagai
+        <i>knockout filter</i> dominan di ATS nyata — bukan angka asumsi.
+      </p>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 11 / 13 · AI</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     12 — LIVE DEMO (Product Shot)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" data-screen-label="12 Live Demo">
+  <div class="blob pri" style="width:420px;height:420px;top:-120px;left:-100px;opacity:.45;"></div>
+  <div class="blob acc" style="width:380px;height:380px;bottom:-100px;right:-80px;opacity:.45;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" /> HireSight</div>
+  <div class="chrome-tr">12 / 13</div>
+
+  <div class="eyebrow-row" style="margin-bottom: 16px;">
+    <span class="bar"></span>
+    <span class="eyebrow">Live Demo · Halaman Hasil Analisis</span>
+  </div>
+  <h2 style="margin-bottom: 28px;">Satu halaman, semua jawaban.</h2>
+
+  <div class="browser" style="flex: 1; display: flex; flex-direction: column;">
+    <div class="tab">
+      <span class="dot3" style="background:#ff5f57;"></span>
+      <span class="dot3" style="background:#febc2e;"></span>
+      <span class="dot3" style="background:#28c840;"></span>
+      <span class="url"><i data-lucide="lock" style="width:11px;height:11px;display:inline;vertical-align:-1px;"></i> 20.198.216.160/analyze/result/1042</span>
+      <div style="margin-left:auto;"><img src="logo.svg" alt="" style="width:18px;height:18px;"/></div>
+    </div>
+    <div class="body" style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px; flex:1;">
+      <!-- LEFT -->
+      <div class="col gap-4">
+        <div class="card" style="padding: 22px;">
+          <div class="row gap-2 items-center" style="margin-bottom: 6px;">
+            <i data-lucide="user-round" style="width:16px;height:16px;color: var(--p);"></i>
+            <span class="eyebrow" style="font-size: 11px; color: var(--p);">Candidate Profile · Fresh Graduate</span>
+          </div>
+          <h3 style="font-size: 22px;">Andi Pratama</h3>
+          <p class="muted" style="font-size: 14px; margin: 4px 0 0;">Apply: Frontend Engineer · PT Telkomsel</p>
+        </div>
+
+        <div class="card" style="padding: 22px; display: flex; gap: 22px; align-items: center;">
+          <div class="ring-wrap" style="width: 150px; height: 150px; flex-shrink: 0;">
+            <svg width="150" height="150" viewBox="0 0 200 200">
+              <circle class="ring-track" cx="100" cy="100" r="86"></circle>
+              <circle class="ring-prog" cx="100" cy="100" r="86" stroke-dasharray="540" stroke-dashoffset="129"></circle>
+            </svg>
+            <div class="ring-num"><div class="n" style="font-size: 42px;">76</div><div class="d" style="font-size: 9px;">/ 100</div></div>
+          </div>
+          <div>
+            <div class="eyebrow" style="font-size: 10px; margin-bottom: 4px;">Overall ATS Score</div>
+            <h3 style="font-size: 22px;">Hampir lolos.</h3>
+            <p style="font-size: 13px; margin: 4px 0 0;">CV kamu cukup baik, tapi ada 4 keyword penting yang masih hilang.</p>
+          </div>
+        </div>
+
+        <div class="grid-2" style="gap: 16px;">
+          <div class="card" style="padding: 18px;">
+            <div class="eyebrow" style="font-size: 10px;">Keyword</div>
+            <div class="mono" style="font-size: 36px; font-weight: 800; letter-spacing: -0.04em; color: var(--p); margin-top: 6px;">82<span style="font-size: 18px; color: var(--n);">/100</span></div>
+            <p style="font-size: 11px; margin: 6px 0 0; color: var(--n);">12 found · 4 missing</p>
+          </div>
+          <div class="card" style="padding: 18px;">
+            <div class="eyebrow" style="font-size: 10px;">Format</div>
+            <div class="mono" style="font-size: 36px; font-weight: 800; letter-spacing: -0.04em; color: color-mix(in srgb, var(--su) 55%, var(--bc)); margin-top: 6px;">94<span style="font-size: 18px; color: var(--n);">/100</span></div>
+            <p style="font-size: 11px; margin: 6px 0 0; color: var(--n);">Headings · sections · contact OK</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="col gap-4">
+        <div class="card" style="padding: 20px;">
+          <div class="row items-center justify-between" style="margin-bottom: 10px;">
+            <span class="eyebrow" style="font-size: 11px;">Keywords Found · 12</span>
+            <i data-lucide="check-circle-2" style="width:18px;height:18px;color: color-mix(in srgb, var(--su) 50%, var(--bc));"></i>
+          </div>
+          <div class="row wrap gap-2">
+            <span class="pill found">React</span>
+            <span class="pill found">TypeScript</span>
+            <span class="pill found">Tailwind</span>
+            <span class="pill found">Git</span>
+            <span class="pill found">REST API</span>
+            <span class="pill found">Responsive</span>
+            <span class="pill found">Figma</span>
+            <span class="pill found">Agile</span>
+            <span class="pill found">+ 4 lainnya</span>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 20px;">
+          <div class="row items-center justify-between" style="margin-bottom: 10px;">
+            <span class="eyebrow" style="font-size: 11px;">Missing · 4</span>
+            <i data-lucide="x-circle" style="width:18px;height:18px;color: var(--er);"></i>
+          </div>
+          <div class="row wrap gap-2">
+            <span class="pill miss">Next.js <span class="mono" style="opacity:.7;">· wajib</span></span>
+            <span class="pill miss">Testing (Jest) <span class="mono" style="opacity:.7;">· wajib</span></span>
+            <span class="pill miss">CI/CD <span class="mono" style="opacity:.7;">· diutamakan</span></span>
+            <span class="pill miss">A11y <span class="mono" style="opacity:.7;">· diutamakan</span></span>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 20px; background: color-mix(in srgb, var(--p) 4%, transparent); border-color: color-mix(in srgb, var(--p) 25%, transparent);">
+          <div class="row gap-2 items-center" style="margin-bottom: 8px;">
+            <span style="font-size: 18px;">💡</span>
+            <span class="eyebrow" style="font-size: 11px; color: var(--p);">Tip · LinkedIn Bullet Template</span>
+          </div>
+          <p class="mono" style="font-size: 13px; line-height: 1.6; margin: 0; color: var(--bc);">
+            "Built a [feature] with <b>Next.js</b> + <b>Jest</b> coverage above [X]%,
+            deployed via <b>CI/CD</b> pipeline ([tool]); reduced [metric] by [%]."
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="muted" style="margin-top: 18px; font-size: 16px;">
+    <i data-lucide="play" style="width:14px;height:14px;display:inline;vertical-align:-2px;"></i>
+    Live demo dijalankan dari URL publik: <span class="mono">http://20.198.216.160</span> — lihat slide penutup untuk seluruh link.
+  </p>
+
+  <div class="chrome-bl"><span class="bar"></span> 12 / 13 · Demo</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     13 — CLOSING / LINKS
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide dark" data-screen-label="13 Closing">
+  <div class="blob pri" style="width:720px;height:720px;top:-200px;left:-200px;opacity:.55;"></div>
+  <div class="blob acc" style="width:600px;height:600px;bottom:-200px;right:-150px;opacity:.45;"></div>
+
+  <div class="chrome-tl"><img src="logo.svg" alt="" style="filter: brightness(0) invert(1) opacity(0.9);" /> HireSight</div>
+  <div class="chrome-tr">13 / 13</div>
+
+  <div class="col grow" style="justify-content: center; max-width: 1600px;">
+    <div class="eyebrow-row" style="margin-bottom: 22px;">
+      <span class="bar"></span>
+      <span class="eyebrow">Thank You · Q&amp;A</span>
+    </div>
+    <h1 class="display" style="font-size: 88px;">
+      Let's help Indonesia<br />
+      <span class="text-gradient">land more interviews.</span>
+    </h1>
+    <p class="lede" style="margin-top: 28px; max-width: 1300px; color: #c8d0de;">
+      Coba prototype-nya, baca dokumentasinya, atau hubungi tim untuk
+      kolaborasi pilot recruiter. Terima kasih atas perhatiannya.
+    </p>
+
+    <div class="grid-3" style="margin-top: 48px; gap: 22px;">
+      <div class="card" style="padding: 26px;">
+        <div class="bubble pri"><i data-lucide="git-branch" style="width:26px;height:26px;"></i></div>
+        <div class="eyebrow" style="margin-top: 14px; color: #8b95a9;">Repository</div>
+        <h3 style="margin-top: 6px; font-size: 22px;">Source Code</h3>
+        <p class="mono" style="font-size: 15px; margin-top: 10px; color: #c8d0de; word-break: break-all;">github.com/fuykaa/hiresight</p>
+      </div>
+      <div class="card" style="padding: 26px;">
+        <div class="bubble pri"><i data-lucide="external-link" style="width:26px;height:26px;"></i></div>
+        <div class="eyebrow" style="margin-top: 14px; color: #8b95a9;">Live Deployment</div>
+        <h3 style="margin-top: 6px; font-size: 22px;">Azure VM</h3>
+        <p class="mono" style="font-size: 15px; margin-top: 10px; color: #c8d0de;">http://20.198.216.160</p>
+      </div>
+      <div class="card" style="padding: 26px;">
+        <div class="bubble pri"><i data-lucide="file-text" style="width:26px;height:26px;"></i></div>
+        <div class="eyebrow" style="margin-top: 14px; color: #8b95a9;">Documentation</div>
+        <h3 style="margin-top: 6px; font-size: 22px;">README · docs/</h3>
+        <p class="mono" style="font-size: 15px; margin-top: 10px; color: #c8d0de;">ATS_RESEARCH.md · TESTING.md · scorer_test.go</p>
+      </div>
+    </div>
+
+    <div class="row gap-6" style="margin-top: 28px; flex-wrap: wrap;">
+      <div class="col">
+        <div class="eyebrow" style="margin-bottom: 4px; color: #8b95a9;">Kistosi Al Ghifari</div>
+        <div class="mono" style="font-size: 13px; color: #c8d0de;">23/515523/TK/56680 · Project Leader, AI Engineer</div>
+      </div>
+      <div style="width: 1px; background: #2f3646;"></div>
+      <div class="col">
+        <div class="eyebrow" style="margin-bottom: 4px; color: #8b95a9;">Kurniawan Surya Atmaja</div>
+        <div class="mono" style="font-size: 13px; color: #c8d0de;">23/516680/TK/56802 · Backend Engineer</div>
+      </div>
+      <div style="width: 1px; background: #2f3646;"></div>
+      <div class="col">
+        <div class="eyebrow" style="margin-bottom: 4px; color: #8b95a9;">Abdul Halim Edi Rahmansyah</div>
+        <div class="mono" style="font-size: 13px; color: #c8d0de;">23/516603/TK/56796 · Software Engineer, UI/UX</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bl"><span class="bar"></span> 13 / 13 · Kelompok 15 · 2026</div>
+  <div class="chrome-br" style="color:#c8d0de;">Smarter CV, Stronger Career.</div>
+</section>
+
+</deck-stage>
+
+<script>
+  // Render Lucide icons once everything is on the page.
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) window.lucide.createIcons();
+  });
+</script>
+</body>
+</html>

@@ -4,3 +4,21 @@
 
 # File upload user — berisi CV/resume pribadi, jangan dipublikasi
 uploads/
+
+.env
+.env.local
+.env.*.local
+
+# File upload user — berisi CV/resume pribadi, jangan dipublikasi
+uploads/
+
+# Build artifacts & binaries
+node_modules/
+backend-hiresight/server
+backend-hiresight/coverage
+*.tar.gz
+*.out
+hiresight-app/.next/
+
+# Design system extraction — local only, tidak perlu di-push
+docs/design-extracted/
