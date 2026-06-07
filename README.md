@@ -7,8 +7,8 @@ Kelompok 15 Senior Project
 | Nama | NIM | Peran |
 |------|-----|-------|
 | Kistosi Al Ghifari | 23/515523/TK/56680 | Project Leader, AI Engineer |
-| Kurniawan Surya Atmaja | *(NIM)* | Backend Engineer, Database Engineer |
-| Abdul Halim Edi Rahmansyah | *(NIM)* | Software Engineer, UI/UX Designer |
+| Kurniawan Surya Atmaja | 23/516680/TK/56802 | Backend Engineer, Database Engineer |
+| Abdul Halim Edi Rahmansyah | 23/516603/TK/56796 | Software Engineer, UI/UX Designer |
 
 ---
 
