@@ -80,11 +80,15 @@ func (h *UserHandler) Login(c *gin.Context) {
         "user_id": user.ID,
         "exp":     time.Now().Add(time.Hour * 24).Unix(),
     })
-		secret := os.Getenv("JWT_SECRET")
-    tokenString, _ := token.SignedString([]byte(secret))
+    secret := os.Getenv("JWT_SECRET")
+    tokenString, err := token.SignedString([]byte(secret))
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal membuat token"})
+        return
+    }
 
-    // Set Cookie
-    c.SetCookie("token", tokenString, 3600*24, "/", "", false, true)
+    // Set Cookie — secure=true saat GIN_MODE=release (production/HTTPS)
+    c.SetCookie("token", tokenString, 3600*24, "/", "", gin.Mode() == gin.ReleaseMode, true)
 
     c.JSON(http.StatusOK, gin.H{"message": "Login berhasil"})
 }

@@ -150,7 +150,7 @@ func (h *ProfileHandler) GetAvatar(c *gin.Context) {
 		contentType = "image/png"
 	}
 
-	c.Header("Cache-Control", "public, max-age=3600")
+	c.Header("Cache-Control", "private, no-cache")
 	c.Data(http.StatusOK, contentType, fileBytes)
 }
 

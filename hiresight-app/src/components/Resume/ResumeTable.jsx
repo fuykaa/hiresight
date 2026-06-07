@@ -19,6 +19,8 @@ const ResumeTable = ({ data, onDelete }) => {
   const router = useRouter();
   const getScoreBadge = (score) => {
     if (score === "Belum dianalisis") return "bg-muted/40 text-muted-foreground border-muted/30";
+    if (score === "Diproses" || score === "Menunggu") return "bg-warning/20 text-warning border-warning/30";
+    if (score === "Gagal") return "bg-error/20 text-error border-error/30";
     const num = Number(score);
     if (num >= 70) return "bg-success/20 text-success border-success/30";
     if (num >= 50) return "bg-warning/20 text-warning border-warning/30";

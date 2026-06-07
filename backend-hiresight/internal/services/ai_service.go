@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 type KeywordItem struct {
@@ -250,7 +251,7 @@ func GenerateTemplateRecommendations(cvText, jobDescription string, missingKeywo
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 60 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("gagal kirim request ke Groq: %w", err)
@@ -312,7 +313,7 @@ func AnalyzeWithGroq(cvText, jdText string) (*AIResult, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 60 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("gagal kirim request ke Groq: %w", err)
@@ -351,7 +352,7 @@ func AnalyzeWithGroq(cvText, jdText string) (*AIResult, error) {
 	lowerCV := strings.ToLower(cvText)
 	for i, kw := range result.Keywords {
 		result.Keywords[i].OccurrenceCount = strings.Count(lowerCV, strings.ToLower(kw.Keyword))
-		result.Keywords[i].FoundInCV = result.Keywords[i].OccurrenceCount > 0
+		// FoundInCV dari AI dipertahankan — AI menangani alias (ML↔Machine Learning, dll.)
 	}
 
 	return &result, nil

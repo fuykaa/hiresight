@@ -52,8 +52,12 @@ export default function ResumePage() {
           let scoreValue = "Belum dianalisis";
           if (settled.status === "fulfilled") {
             const analysisData = settled.value.data;
-            if (analysisData?.status === "completed") {
-              scoreValue = analysisData.ats_score;
+            switch (analysisData?.status) {
+              case "completed":  scoreValue = analysisData.ats_score; break;
+              case "processing": scoreValue = "Diproses";             break;
+              case "pending":    scoreValue = "Menunggu";             break;
+              case "failed":     scoreValue = "Gagal";                break;
+              default:           scoreValue = "Belum dianalisis";
             }
           }
           return {

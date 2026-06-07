@@ -47,14 +47,20 @@ func (r *AnalysisRepository) GetStatsByUser(userID string) (int64, int, string, 
 	return agg.Count, agg.MaxScore, topResumeID, nil
 }
 
-// Ambil hasil berdasarkan Resume ID
+// Ambil hasil berdasarkan Resume ID — selalu ambil yang terbaru (created_at DESC)
 func (r *AnalysisRepository) GetResultWithSecurity(resumeID string, userID string) (*models.AnalysisResult, error) {
 	var result models.AnalysisResult
 	err := r.DB.Table("analysis_results").
 		Select("analysis_results.*").
 		Joins("JOIN resumes ON resumes.id = analysis_results.resume_id").
 		Where("analysis_results.resume_id = ? AND resumes.user_id = ?", resumeID, userID).
+		Order("analysis_results.created_at DESC").
 		First(&result).Error
 
 	return &result, err
+}
+
+// Hapus semua record analisis untuk resume tertentu (dipanggil sebelum re-analyze)
+func (r *AnalysisRepository) DeleteByResumeID(resumeID string) error {
+	return r.DB.Where("resume_id = ?", resumeID).Delete(&models.AnalysisResult{}).Error
 }

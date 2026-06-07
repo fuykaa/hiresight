@@ -49,15 +49,24 @@ func (h *AnalysisHandler) TriggerAnalysis(c *gin.Context) {
 		resume.JobDescription = body.JobDescription
 	}
 
-	// 2. Buat record awal dengan status 'processing'
+	// 2. Hapus record analisis lama agar polling tidak mengembalikan hasil stale
+	if err := h.Repo.DeleteByResumeID(resumeID); err != nil {
+		c.JSON(500, gin.H{"error": "Gagal menghapus analisis sebelumnya"})
+		return
+	}
+
+	// 3. Buat record awal dengan status 'processing'
 	newAnalysis := models.AnalysisResult{
 		ID:       uuid.New(),
 		ResumeID: resume.ID,
 		Status:   "processing",
 	}
-	h.Repo.Save(&newAnalysis)
+	if err := h.Repo.Save(&newAnalysis); err != nil {
+		c.JSON(500, gin.H{"error": "Gagal membuat record analisis"})
+		return
+	}
 
-	// 3. Jalankan analisis AI di background goroutine
+	// 4. Jalankan analisis AI di background goroutine
 	go h.runAnalysis(&newAnalysis, resume.FilePath, resume.FileType, resume.JobDescription, resume.JobPosition)
 
 	c.JSON(202, gin.H{"message": "Analisis dimulai", "analysis_id": newAnalysis.ID, "status": "processing"})

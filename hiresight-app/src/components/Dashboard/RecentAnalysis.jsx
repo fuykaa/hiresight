@@ -47,9 +47,17 @@ const RecentAnalysis = ({ data }) => {
                 </div>
                 <Badge
                   variant="secondary"
-                  className="bg-success/20 text-success border-none font-bold"
+                  className={
+                    typeof item.score === "number"
+                      ? item.score >= 70
+                        ? "bg-success/20 text-success border-none font-bold"
+                        : item.score >= 50
+                        ? "bg-warning/20 text-warning border-none font-bold"
+                        : "bg-error/20 text-error border-none font-bold"
+                      : "bg-muted/40 text-muted-foreground border-none font-bold"
+                  }
                 >
-                  {item.score}/100
+                  {typeof item.score === "number" ? `${item.score}/100` : item.score}
                 </Badge>
               </div>
               <CardTitle className="text-lg font-bold truncate">

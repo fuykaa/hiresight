@@ -32,6 +32,12 @@ export default function AnalyzePage() {
       .catch(() => setPrefillResumeId(null));
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
   const ACCEPTED_TYPES = [
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -100,7 +106,7 @@ export default function AnalyzePage() {
             clearInterval(pollRef.current);
             setStatus("error");
             setErrorMessage(
-              "Ekstraksi teks gagal. Pastikan PDF berbasis teks (bukan hasil scan/gambar) atau file DOCX tidak rusak."
+              "Ekstraksi teks gagal. Pastikan file tidak rusak dan ukuran tidak melebihi batas. PDF scan tetap didukung via OCR."
             );
           } else {
             setProgress((prev) => Math.min(prev + 5, 90));
@@ -192,8 +198,7 @@ export default function AnalyzePage() {
                   />
                 </label>
                 <p className="text-xs text-muted-foreground text-center leading-relaxed">
-                  PDF berbasis teks atau DOCX (Word) didukung.{" "}
-                  PDF hasil scan atau gambar tidak dapat diproses.
+                  PDF berbasis teks maupun hasil scan didukung via OCR. DOCX (Word) juga didukung.
                 </p>
               </>
             ) : (

@@ -166,7 +166,7 @@ func jobTitleBonus(extractedTitles []string, jobPosition string) int {
 		if title == target {
 			return 10
 		}
-		if strings.Contains(target, title) || strings.Contains(title, target) {
+		if len(title) >= 4 && (strings.Contains(target, title) || strings.Contains(title, target)) {
 			return 5
 		}
 	}

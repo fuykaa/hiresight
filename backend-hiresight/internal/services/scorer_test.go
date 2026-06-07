@@ -64,10 +64,10 @@ func TestCalculateScores_OnlyPreferredFound(t *testing.T) {
 	}
 	scores := CalculateScores(result, "Backend Developer")
 
-	// required tidak ditemukan â†’ required_score = 0
-	// keyword_score = 0Ã—0.7 + preferredÃ—0.3
-	if scores.KeywordScore > 35 {
-		t.Errorf("KeywordScore seharusnya rendah jika required tidak ada: got %d", scores.KeywordScore)
+	// required tidak ditemukan → required_score = 0
+	// keyword_score = 0×0.7 + (0.8×1.0/1×100)×0.3 = 24
+	if scores.KeywordScore != 24 {
+		t.Errorf("KeywordScore hanya preferred ditemukan di experience: got %d, want 24", scores.KeywordScore)
 	}
 }
 
@@ -153,8 +153,8 @@ func TestCalculateScores_FrequencyBoost(t *testing.T) {
 	scoresBase := CalculateScores(base, "")
 	scoresBoosted := CalculateScores(boosted, "")
 
-	if scoresBoosted.KeywordScore < scoresBase.KeywordScore {
-		t.Errorf("Frekuensi tinggi seharusnya menghasilkan skor yang lebih tinggi atau sama")
+	if scoresBoosted.KeywordScore <= scoresBase.KeywordScore {
+		t.Errorf("Frekuensi tinggi seharusnya menghasilkan skor lebih tinggi: boosted=%d, base=%d", scoresBoosted.KeywordScore, scoresBase.KeywordScore)
 	}
 }
 
@@ -167,7 +167,6 @@ func TestCalculateScores_JobTitleExactMatch(t *testing.T) {
 		JobTitlesExtracted: []string{"Software Engineer"},
 	}
 	scores := CalculateScores(result, "Software Engineer")
-	atsWithoutBonus := scores.ATSScore
 
 	resultNoTitle := &AIResult{
 		Keywords:           []KeywordItem{},
@@ -177,8 +176,10 @@ func TestCalculateScores_JobTitleExactMatch(t *testing.T) {
 	}
 	scoresNoTitle := CalculateScores(resultNoTitle, "Software Engineer")
 
+	if scores.ATSScore >= 91 {
+		t.Fatalf("precondition gagal: ATSScore=%d terlalu tinggi, cap 100 akan menyembunyikan bonus +10", scores.ATSScore)
+	}
 	diff := scores.OverallScore - scoresNoTitle.OverallScore
-	_ = atsWithoutBonus
 	if diff != 10 {
 		t.Errorf("Job title exact match seharusnya +10 bonus: got diff=%d", diff)
 	}
