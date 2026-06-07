@@ -542,7 +542,10 @@ export default function AnalyzeResult() {
               variant="outline"
               size="lg"
               className="flex-1 md:w-fit px-10 h-12 rounded-xl font-bold border-border hover:bg-muted"
-              onClick={() => router.push("/analyze")}
+              onClick={() => {
+                sessionStorage.removeItem("resume_id");
+                router.push("/analyze");
+              }}
             >
               <Upload size={18} className="mr-2" /> Upload New
             </Button>
